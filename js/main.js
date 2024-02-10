@@ -66,7 +66,6 @@ window.onload =  (event) => {
     checkLocalStorage();
     setTicketNbr();
     displayTotal();
-    
 }
 
 function renderScreen(){
@@ -382,7 +381,7 @@ function refreshNumber(){ //REFRESHES THE NUMBER OF EACH VALIDATED ARTICLE ON TH
 
 function addArticleBox(elem){  //ADDS A NEW ARTICLE BOX IN THE SCREEN 
     
-    let template = document.querySelector("template");  //LOADS THE HTML TEMPLATE TO A VARIABLE
+    let template = document.querySelector("#articleTemplate");  //LOADS THE HTML TEMPLATE TO A VARIABLE
     let clone = template.content.cloneNode(true);       //CREATES A CLONE (COPY) OF THE TEMPLATE
     let elements = clone.querySelectorAll("div");
     let container = document.querySelector("#Articles");
@@ -774,15 +773,9 @@ function validateTicket(){ //SAVES THE TICKET TO LOCAL STORAGE FOR FUTURE USAGE
     //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
         return {
             "total"     :   el.total,
-            "price"      :   {
-                numeric: el.price.numeric,
-                string:  el.price.value
-            },
-
-            "quantity"  :   {
-                numeric: el.quantity.numeric,
-                string:  el.quantity.value
-            },
+            "price"     :   el.price.numeric,
+            "quantity"  :   el.quantity.numeric,
+            
         }
 
     })
@@ -793,7 +786,8 @@ function validateTicket(){ //SAVES THE TICKET TO LOCAL STORAGE FOR FUTURE USAGE
         "timeClose":        Ticket.closeTime,
         "totalTicket":      Ticket.total,
         "ticketId":         Ticket.ticketId,
-        "count":            Ticket.count
+        "count":            Ticket.count,
+        "date":             Ticket.date
 })
 
     clearAll()
@@ -802,6 +796,7 @@ function validateTicket(){ //SAVES THE TICKET TO LOCAL STORAGE FOR FUTURE USAGE
     Ticket.openTime= null;
     Ticket.closeTime= null;
     setTicketNbr();
+    fillTicket()
     goToPrintScreen();
     
 }
@@ -921,6 +916,7 @@ function returnToCalc(){
     let calculator= document.getElementsByClassName("calculator")[0];
     printScreen.classList.add("hidden");
     calculator.classList.remove("hidden");
+    document.querySelector(".data").innerHTML=""
 
 }
 
@@ -933,7 +929,10 @@ function returnToCalc(){
 
 //STILL WORKING ON HOW TOFILL THE TICKET WITH THE NECESSARY DATA
 function fillTicket(){
-
+    fillTicketHeader();
+    fillTicketFooter();
+    fillTicketLines(dailyTickets[dailyTickets.length-1].content);
+    fillTicketTotal(dailyTickets[dailyTickets.length-1]);
     
 
 }
@@ -953,13 +952,44 @@ function fillTicketFooter(){
     let ticketDate= document.getElementById("date-t");
     let OpenTime= document.getElementById("openTime");
     let CloseTime= document.getElementById("closeTime");
+    let lastTicket= dailyTickets[dailyTickets.length-1]
+
+    ticketDate.innerHTML= `Date: ${lastTicket.date}`;
+    OpenTime.innerHTML= `T.Ouv: ${lastTicket.timeOpen}`;
+    CloseTime.innerHTML= `T.Ferm: ${lastTicket.timeClose}`;
 }
 
 
 
 
+function addTicketLine(elem){  //ADDS A TICKET LINE IN THE PRINTING SCREEN 
+    
+    let template = document.querySelector("#ticketLineTemplate");  //LOADS THE HTML TEMPLATE TO A VARIABLE
+    let clone = template.content.cloneNode(true);       //CREATES A CLONE (COPY) OF THE TEMPLATE
+    let elements = clone.querySelectorAll("div");
+    let container = document.querySelector(".data");
 
 
+    let price= elem.price.toFixed(3);
+    let quantity= String(elem.quantity);
+    let total= elem.total.toFixed(3);
+
+    elements[1].innerHTML= price;
+    elements[2].innerHTML= quantity;
+    elements[3].innerHTML= total;
+    container.appendChild(clone); //INJECTS THE TEMPLATE'S COPY SAVED IN "container"  TO THE DOM
+   
+}
+
+function fillTicketTotal(ticket){
+    let totalTicket= document.getElementById("TotalVal");
+    totalTicket.innerHTML= ticket.totalTicket.toFixed(3)
+}
+
+
+function fillTicketLines(content){
+    content.forEach(el=>addTicketLine(el))
+}
 
 
 
