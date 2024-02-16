@@ -159,7 +159,6 @@ function render(){ //WILL RENDER THE DATA FLECTING THE STATE ON THE DOM
         displayQuantity(el);
     });
     refreshNumber();
-    refreshDate();
 
     highlightSelectedArticle();
     highlightSelectedText();
