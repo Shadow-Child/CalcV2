@@ -214,7 +214,7 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
     let myKeyboard= document.getElementById("keyboard");
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.add("h-[95vh]");
+    myScreen.classList.add("h-[98svh]");
     myKeyboard.classList.add("hidden");
     ic_total.setSceenState("EXTENDED");
 }
