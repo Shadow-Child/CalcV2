@@ -14,12 +14,12 @@
 
 <body class="flex justify-center h-svh  overflow-hidden">
 
-    <div id="calculator" class="bg-gray-100 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
+    <div id="calculator" class="bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
 
-        <div id="screen" class="flex flex-col transition-[height] duration-200 ease-in-out"> <!--SCREEN START-->
+        <div id="screen" class="transition-[height] duration-200 ease-in-out">
             <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
-                <div id="date" class="flex-[2_0_0%]"></div>
-                <div class="time flex-[1_0_0%]">-:-:-</div>
+                <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
+                <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
                 <div id="num-ticket" class="flex-[2_0_0%]"></div>
             </div>
 
@@ -78,7 +78,7 @@
 
 
         <div id="keyboard" class="grid w-full relative bottom-0 aspect-[1.17/1] p-6" > <!--KEYBOARD START-->
-
+            <style>#keyboard.down{margin-bottom: -100%; transition: margin-bottom 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; transition: margin-bottom 0.2s ease-in-out;}</style>
             <div id="utilities" class="row-span-1 flex justify-around h-[60%] grayscale"></div>
             <div class="keys grid grid-cols-4 h-full row-span-4 mt-0 pt-0 text-2xl min-[360px]:text-3xl font-bold text-gray-700">
                 <div class="col-span-3 grid grid-cols-3 grid-rows-4 h-full items-center">
@@ -147,19 +147,27 @@
                         <div id="Tot.u" class="w-[4.6rem] text-right"></div>
                      </div>
                 </template>
-                <div class="data justify-center mt-4 mb-8 border-b-2 border-dashed border-gray-400 relative">
+                <div class="data justify-center mt-4 mb-8  relative">
                     <div class="border-l h-[95%] border-black absolute left-[36%] top-0"></div>                    
                     <div class="border-l h-[95%] border-black absolute left-[65%] top-0"></div>
                 </div>
-                <div class="totalTicket flex justify-between w-[85%] m-auto mt-6 mb-6">
+                <div class="totalTicket flex justify-between w-[85%] m-auto mt-6 mb-6 border-t-2 border-dashed border-gray-400">
                     <div class="font-bold">Total:</div>
                     <div id="TotalVal" class="font-bold"></div>
                 </div>
                 
             </div>
-            <div class="ticketFooter text-center w-full mb-4">
-                <div id="date-t"></div>
-                <div id="closeTime"></div>
+            <div class="ticketFooter text-center w-fit mb-4 m-auto">
+                <div class="w-fit flex">
+                    <div>Date:</div>
+                    <div id="date-t"></div>
+                </div>
+
+                <div class="w-fit flex">
+                    <div>Temps:</div>
+                    <div id="closeTime"></div>
+                </div>
+
             </div>
         </div>
 

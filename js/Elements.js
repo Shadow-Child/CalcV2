@@ -101,7 +101,7 @@ let ic_validate={
         clearAll()
         localStorage[`${Ticket.date}`]= JSON.stringify(dailyTickets);
         Ticket.ticketId += 1;
-        Ticket.openTime= null;
+        ic_openTime.render(ic_openTime.container,ic_openTime.default)
         Ticket.closeTime= null;
         setTicketNbr();
         fillTicket()
@@ -177,7 +177,7 @@ let ic_total={
     ic_html: function(){
         let total= this.total;
         return `
-                <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full">
+                <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full" onclick="ic_total.OnclickEvent()">
 
                     <div class="text-cyan-700 absolute left-2 top-1 text-md max-[270px]:hidden">TOTAL</div>
 
@@ -220,7 +220,10 @@ let ic_nextBtn={
         let articleState= actualEdit?.quantity.state;
 
         if(Ticket.state== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
-            setOpenTime();
+            
+            ic_openTime.setTimeValue()
+            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
+            
             addArticle()
             Ticket.state= "NOT-EMPTY"
         }
@@ -328,7 +331,7 @@ ic_date={
     container: null,
     dateValue: null,
     
-    setDate: function(){
+    setDateValue: function(){
         
     var today = new Date(); //GETS THE ACTUAL DATE EXAMPLE(  Tue Feb 06 2024 10:39:50 GMT+0100 (heure normale d’Europe centrale)  )
     var dd = String(today.getDate()).padStart(2, '0'); // "06"
@@ -339,7 +342,7 @@ ic_date={
     },
 
     render: function(target){
-        this.setDate();
+        this.setDateValue();
         this.container= target;
         this.container.innerHTML= this.ic_html();
     },
@@ -347,10 +350,34 @@ ic_date={
     ic_html: function(){
 
         return `
-            <div>${this.dateValue}</div>
+            <div> ${this.dateValue}</div>
         `
     }
 
+}
+
+ic_openTime={
+    container: null,
+    timeValue: null,
+    default: "-:-:-",
+
+    setTimeValue: function(){
+        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
+        let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
+
+        this.timeValue= currentDateTime.split(" ")[1]; // "12:32:16"
+    },
+
+    render: function(target, value){
+        this.container= target;
+        this.container.innerHTML= this.ic_html(value);
+    },
+
+    ic_html:function(value){
+        return `
+            <div>${value}</div>
+        `
+    }
 }
 
 

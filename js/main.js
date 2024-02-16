@@ -54,8 +54,10 @@ function putUtilitiesIcons(icons) { //PUTS UTILITIES ICONS IN PLACE OVER THE KEY
 window.onload =  (event) => {
 
     this.addEventListener("resize", (event)=> {setScreenHeight()});
-    ic_date.render(document.getElementById("date"));
+    ic_date.render(document.getElementById("ic_dateContainer"));
     setOnClick();
+    ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
+
     //putUtilitiesIcons(Utilitiesicons);
     checkLocalStorage();
     setTicketNbr();
@@ -66,8 +68,7 @@ window.onload =  (event) => {
     ic_nextBtn.render(document.getElementById("ic_nextBtnContainer"))
     ic_backspace.render(document.getElementById("ic_bSpaceContainer"));
     
-    swipeDownDetect(document.getElementById("extend-container"))
-    swipeDownDetect(document.getElementById("total"))
+    swipeDownDetect(document.getElementById("total-box"))
 
 }
 
@@ -214,8 +215,9 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
     let myKeyboard= document.getElementById("keyboard");
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.add("h-[96vh]");
-    myKeyboard.classList.add("hidden");
+    myScreen.classList.add("h-[98vh]");
+    myKeyboard.classList.add("down");
+
     ic_total.setSceenState("EXTENDED");
 }
 
@@ -223,8 +225,8 @@ function shrinkScreen(){ //WILL SHRINK THE CALCULATOR'S SCREEN UP
     let myKeyboard= document.getElementById("keyboard"); 
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.remove("h-[96vh]");
-    myKeyboard.classList.remove("hidden");
+    myScreen.classList.remove("h-[98vh]");
+    myKeyboard.classList.remove("down");
     ic_total.setSceenState("SHRUNK");
 }
 
@@ -282,7 +284,6 @@ function displayPrice(el) {  //DISPLAYS THE VALUE OF "PRICE" FOR EACH ARTICLE
     let article = document.getElementById(`${el.id}`)
     let activeDinars= article.children[1].children[0].children[0];
     let activeMillim = article.children[1].children[0].children[2].children[1];
-    console.log("thats a price render")
     let value=  el.price.value;
     if(!value.includes('.')){ //IF THE VALUE OF PRICE CONTAINS A "." ALREADY IT TURNS IT INTO A FLOAT
         value= makeFloat(value);
@@ -306,17 +307,6 @@ function displayQuantity(el) { //DISPLAYS THE VALUE OF "QUANTITY" FOR EACH ARTIC
     el.quantity.numeric= parseFloat(el.quantity.value);
     quantityText.innerHTML= el.quantity.value.padStart(2,0)
     };
-
-
-
-/*function displayTotal() { //DISPLAYS THE TOTAL VALUE OF THE VALIDATED ARTICLES
-
-    let strValue = Ticket.total.toFixed(3); //EXAMPLE: Ticket.total= 23.5  / strValue= "23.500" ;
-    let splitted = strValue.split("."); //splitted= ["23","500"]
-
-    dinarsTot.innerHTML = splitted[0];
-    millimTot.innerHTML = splitted[1];
-}*/
 
 
 
@@ -404,7 +394,7 @@ function clearAll(){ //DELETS ALL THE ARTICLES FROM THE SCREEN + FROM THE DATA
     })
 
     Ticket.state= "EMPTY"; //RESET THE TICKET'S STATE TO "EMPTY"
-    document.getElementsByClassName("time")[0].innerHTML= "-:-:-";
+    document.getElementById("closeTime").innerHTML= "-:-:-";
 
     setTimeout(()=> render(), 300) //WAITS FOR 0,3s UNTIL THE DELETING'S SLIDE EFFECT IS FINISHED THEN REFRESHES THE SCREEN
 
@@ -417,7 +407,7 @@ function deleteArticle(element){ //DELETES A SPECIFIC ARTICLE
     Ticket.content= Ticket.content.filter((Article) =>!(Article.id == ID)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
     if(Ticket.content.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
         Ticket.state= "EMPTY" 
-        document.getElementsByClassName("time")[0].innerHTML= "-:-:-"; //RESETS THE OPENING TIME
+        ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
     }
     else {
         Ticket.state= "NOT-EMPTY";
@@ -554,7 +544,10 @@ function handleScreenClick(){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW EL
 
     if(Ticket.state== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
         Ticket.state= "NOT-EMPTY"
-        setOpenTime();
+
+        ic_openTime.setTimeValue()
+        ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
+        
         addArticle();
     }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
         stopEditing(actualEdit?.price);
@@ -573,7 +566,10 @@ function handleClick(number) {  //HANDLES NUMBERS CLICKS AN ASSIGN THEIR VALUE T
     if(Ticket.state== "EMPTY"){ 
     //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
         addArticle();
-        setOpenTime();
+        
+        ic_openTime.setTimeValue();
+        ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
+
         Ticket.state= "NOT-EMPTY"
     }else if(Ticket.state== "NOT-EMPTY" && Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
         addArticle() 
@@ -641,19 +637,19 @@ function handleClick(number) {  //HANDLES NUMBERS CLICKS AN ASSIGN THEIR VALUE T
 
 
 
-function setOpenTime(){ //SETS THE TICKET'S OPENING TIME
+/*function setOpenTime(){ //SETS THE TICKET'S OPENING TIME
     let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
     let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
     let time= currentDateTime.split(" ")[1]; // "12:32:16"
     document.getElementsByClassName("time")[0].innerHTML= time;
     Ticket.openTime= time;
-}
+}*/
 
 function setCloseTime(){ //SETS THE TICKET'S CLOSING TIME
     let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
     let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
     let time= currentDateTime.split(" ")[1]; //"12:32:16"
-    document.getElementsByClassName("time")[0].innerHTML= time;
+    document.getElementById("closeTime").innerHTML= time;
     Ticket.closeTime= time;
 }
 
@@ -866,13 +862,11 @@ function fillTicketHeader(){
 
 
 function fillTicketFooter(){
-    let ticketDate= document.getElementById("date-t");
-    let OpenTime= document.getElementById("openTime");
+    ic_date.render(document.getElementById("date-t"))
     let CloseTime= document.getElementById("closeTime");
     let lastTicket= dailyTickets[dailyTickets.length-1]
 
-    ticketDate.innerHTML= `Date: ${lastTicket.date}`;
-    CloseTime.innerHTML= `Temps: ${lastTicket.timeClose}`;
+    CloseTime.innerHTML= ` ${lastTicket.timeClose}`;
 }
 
 
@@ -913,8 +907,8 @@ function fillTicketLines(content){
 function setScreenHeight(){
     let parentHeight= document.getElementById("calculator").offsetHeight;
     let keyboardHeight= document.getElementById("keyboard").offsetHeight;
-    document.getElementById("screen").removeAttribute("class");
-    document.getElementById("screen").setAttribute("class",`flex flex-col transition-[height] duration-200 ease-in-out h-[${parentHeight-keyboardHeight}px]`);
+    //document.getElementById("screen").removeAttribute("class");
+    document.getElementById("screen").setAttribute("class",`flex flex-col transition-[height] duration-200 ease-in-out flex-1`);
 
 }
 
