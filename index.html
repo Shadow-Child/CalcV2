@@ -12,39 +12,38 @@
     <title>Yumurta Calculator Lite</title>
 </head> 
 
-<body class="flex justify-center h-svh min-h-[720px] overflow-hidden">
+<body class="flex justify-center h-svh  overflow-hidden">
 
-    <div class="calculator bg-gray-100 border border-gray-700 h-dvh w-full max-w-[50vh] min-w-[30vh] flex flex-col font-['Azeret_Mono']">
+    <div id="calculator" class="bg-gray-100 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
 
-        <div id="screen" class="flex-1 flex flex-col"> <!--SCREEN START-->
+        <div id="screen" class="flex flex-col transition-[height] duration-200 ease-in-out"> <!--SCREEN START-->
             <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
-                <div class="date flex-[2_5_0%]"></div>
-                <div class="time flex-[1_5_0%]">-:-:-</div>
-                <div id="num-ticket" class="flex-[2_5_0%]"></div>
+                <div id="date" class="flex-[2_0_0%]"></div>
+                <div class="time flex-[1_0_0%]">-:-:-</div>
+                <div id="num-ticket" class="flex-[2_0_0%]"></div>
             </div>
 
-            <div class="data-box bg-white flex-1 overflow-y-scroll flex items-end" onclick="handleScreenClick(this)">
+            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick(this)">
 
                 <template id="articleTemplate">
 
-                    <div class="Article flex aspect-[8/1] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
+                    <div class="Article flex min-h-[3rem] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
 
-                        <div class="close flex-[1_8_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); deleteArticle(this); setTimeout(()=>render(), 300)">x</div>
-                        <div  class="Article-Info flex flex-[7_8_0%] h-full items-center">
+                        <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); deleteArticle(this); setTimeout(()=>render(), 300)">x</div>
+                        <div  class="Article-Info flex flex-[7_0_0%] h-full items-center">
                             
-                            <div class="price flex flex-[3_7_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="editPrice(this); event.stopPropagation();">
-                                <div class="dinars-box text-4xl max-[320px]:text-2xl" >99</div>
+                            <div class="price flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="editPrice(this); event.stopPropagation();">
+                                <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
                                 
                                 <div class="coma text-3xl max-[320px]:text-2xl">,</div>
                                     <div class="flex flex-col relative">
                                         <div class="currency leading-none max-[320px]:text-sm absolute bottom-6 max-[360px]:hidden">DT</div>
-                                        <div class="millimes-box text-2xl leading-none max-[320px]:text-xl">999</div>
+                                        <div class="millimes-box text-2xl leading-none max-[320px]:text-xl">000</div>
                                     </div>
 
                             </div>
                         
                         
-
                             <div class="quantity-box flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="editQuantity(this); event.stopPropagation();">
 
                                 <div class="multiply text-lg h-full flex items-end">x</div>
@@ -55,45 +54,19 @@
                         </div>
 
                     </div>
+                    
                 </template>
 
-                <div id="Articles" class="items-center w-full h-fit overflow-scroll">
+                    <div id="Articles" class="w-full overflow-x-hidden flex flex-col-reverse h-full"></div>
 
-                </div>
 
             </div>
         
             <div id="total-box" class="z-10 bg-slate-100 flex flex-row w-full aspect-[5/1] rounded-b-2xl outline outline-1 font-bold">
+                <div id="ic_discardContainer" class="flex-[1_0_0%]"></div>
 
-                <div id="discard" class="grayscale flex-[1_5_0%] flex justify-center items-center aspect-[1/1]">
-                    <img class="h-[70%]" src="Ressources/Imgs/supprimer ticket.svg">
-                </div>
-                <div id="total" class="border-l-2 border-r-2 border-gray-800 flex-[3_5_0%] flex justify-center items-center relative">
-
-                    <div class="text-cyan-700 absolute left-2 top-1 text-md">TOTAL</div>
-
-                    <div id="total-val " class="w-full flex flex-row justify-center absolute top-7 h-[50%] items-end">
-                        <div id="dinars-total" class="text-4xl max-[320px]:text-2xl">22</div>
-                        <div class="coma text-4xl max-[320px]:text-2xl">,</div>
-
-                        <div class="relative">
-                        <div class="leading-none max-[320px]:text-sm absolute bottom-6 max-[320px]:bottom-5">DT</div>
-                        <div id="millimes-total" class="text-2xl leading-none max-[320px]:text-xl">500</div>
-    
-                        </div>
-                        
-
-                    </div>
-
-                    <div id="extend-container" class="flex justify-center bottom absolute bottom-[-17px]">
-                        <img src="Ressources/Imgs/extend.svg" id="extend">
-                    </div>
-
-                </div>
-                <div id="validate" class="grayscale flex-[1_5_0%] relative flex justify-center items-center">
-                    <div class="nbrIndicator absolute bottom-[50%] max-[320px]:bottom-[40%] border w-[2rem] max-[360px]:w-[1.7rem] aspect-square max-[320px]:aspect-square bg-red-500 rounded-full text-white flex justify-center items-center">0</div>
-                    <img class="w-[70%] absolute top-6" src="Ressources/Imgs/arrow.png">
-                </div>
+                <div id="ic_totalContainer" class="flex-[3_0_0%]"></div>
+                <div id="ic_validateContainer" class="flex-[1_0_0%]"></div>
 
             </div>
 
@@ -104,10 +77,10 @@
 
 
 
-        <div id="keyboard" class="grid w-full" > <!--KEYBOARD START-->
+        <div id="keyboard" class="grid w-full relative bottom-0 aspect-[1.17/1] p-6" > <!--KEYBOARD START-->
 
-            <div id="utilities" class="row-span-1 flex justify-around m-4 h-[60%] grayscale"></div>
-            <div class="keys grid grid-cols-4 h-full row-span-4 p-6 pt-0 text-2xl min-[360px]:text-3xl font-bold text-gray-700">
+            <div id="utilities" class="row-span-1 flex justify-around h-[60%] grayscale"></div>
+            <div class="keys grid grid-cols-4 h-full row-span-4 mt-0 pt-0 text-2xl min-[360px]:text-3xl font-bold text-gray-700">
                 <div class="col-span-3 grid grid-cols-3 grid-rows-4 h-full items-center">
                     <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >1</div> 
                     <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >2</div>
@@ -123,10 +96,10 @@
                     <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >.</div>
                 </div>
 
-                <div class="operators col-span-1 grid grid-rows-4  pl-2">
+                <div class="operators col-span-1 grid grid-rows-4  pl-2 items-center">
                     <div class="key row-span-1 flex justify-center items-center rounded-xl border border-gray-700 bg-white h-[90%]" id="remise">%</div>
-                    <div class="key row-span-2 flex justify-center items-center rounded-xl border border-gray-700 bg-green-100 h-[90%]" id="suivant" onclick="handleNext();">-->]</div>
-                    <div class="key row-span-1 flex justify-center items-center rounded-xl border border-gray-700 bg-red-50 h-[90%]" id="backspace" onclick="backspace();"><---</div>    
+                    <div id="ic_nextBtnContainer" class="row-span-2 h-[90%]"></div>
+                    <div id="ic_bSpaceContainer" class="row-span-1 h-[90%]"></div>
                 </div>
                 
 
@@ -138,56 +111,54 @@
     </div>
     
 
-    <div class="printScreen border border-gray-700 h-dvh w-full max-w-[50vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-scroll">
+    <div id="printScreen" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-auto">
         <div class="printNavBar flex justify-between border-b-2 border-dashed border-black aspect-[10/1] items-center pl-4 pr-4">
             <div class="goBack" onclick="returnToCalc()"> &#8592; Retour </div>
-            <div class="print" onclick="window.print()">Print &#8594;</div>
+            <div class="print" onclick="printTicket();">Print &#8594;</div>
         </div>
         
-        <div class="ticket">
+        <div id="ticket" class="overflow-auto">
             <div class="ticketHead flex justify-between p-6">
-                <div class="logo w-[20%]">
-                    <img src="Ressources/Imgs/Y-logo.png">
+                <div class="logo w-[3rem] max-[320px]:w-[2.5rem] flex items-center">
+                    <img src="Ressources/Imgs/Y-logo.png" >
                 </div>
-                <div class="storeName font-black text-4xl text-center max-[400px]:text-3xl">YUMURTA STORE</div>
-                <div class="qrCode w-[20%]">
+                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl">YUMURTA STORE</div>
+                <div class="qrCode w-[3rem] max-[320px]:w-[2.5rem] flex items-center">
                     <img src="Ressources/Imgs/qrCode.png">
                 </div>
             </div>
-            <div class="generalInfo mt-2 mb-6 border-b-2 border-t-2 pb-4 pt-4 border-black border-dashed">
-                <div class="w-fit m-auto">
+            <div class="generalInfo mt-2 mb-6 border-b-2 border-t-2 pb-4 pt-4 border-gray-400 border-dashed flex justify-around text-sm flex-wrap">
                     <div id="ticketId"></div>
                     <div id="length"></div>
-                </div>
             </div>
-            <div class="goods">
+            <div class="goods text-right">
 
-                <div class="titles flex w-[70%] m-auto justify-between">
+                <div class="titles flex w-[85%] m-auto justify-between">
 
-                    <div>Prix.U</div>
+                    <div class="w-[3rem] text-left">Prix</div>                    
                     <div>Qté</div>
-                    <div>Total.U</div>
+                    <div class="w-[4.6rem]">Total</div>
                     
                 </div>
                 <template id="ticketLineTemplate">
-                    <div class="ligne aspect-[10/1] w-[70%] m-auto flex justify-between">
-                        <div id="Price"></div> 
-                        <div id="Qte"></div>
-                        <div id="Tot.u" class="w-[20%] text-right"></div>
+                    <div class="ligne aspect-[10/1] w-[85%] m-auto flex justify-between">
+                        <div id="Price" class="w-[4.6rem]"></div> 
+                        <div id="Qte" class="w-[1.25rem]"></div>
+                        <div id="Tot.u" class="w-[4.6rem] text-right"></div>
                      </div>
                 </template>
-                <div class="data justify-center pt-8 pb-8 border-b-2 border-dashed border-black">
-
+                <div class="data justify-center mt-4 mb-8 border-b-2 border-dashed border-gray-400 relative">
+                    <div class="border-l h-[95%] border-black absolute left-[36%] top-0"></div>                    
+                    <div class="border-l h-[95%] border-black absolute left-[65%] top-0"></div>
                 </div>
-                <div class="totalTicket flex justify-between w-[70%] m-auto mt-6 mb-6">
-                    <div>Total Ticket:</div>
-                    <div id="TotalVal"></div>
+                <div class="totalTicket flex justify-between w-[85%] m-auto mt-6 mb-6">
+                    <div class="font-bold">Total:</div>
+                    <div id="TotalVal" class="font-bold"></div>
                 </div>
                 
             </div>
-            <div class="ticketFooter text-center w-full">
+            <div class="ticketFooter text-center w-full mb-4">
                 <div id="date-t"></div>
-                <div id="openTime"></div>
                 <div id="closeTime"></div>
             </div>
         </div>
@@ -196,10 +167,7 @@
 
     
     <script src="js/main.js"></script>
-    <script>
-
-  
-    </script>
+    <script src="js/Elements.js"></script>
 
 </body>
 </html>
