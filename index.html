@@ -20,7 +20,7 @@
             <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
                 <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
                 <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
-                <div id="num-ticket" class="flex-[2_0_0%]"></div>
+                <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
             </div>
 
             <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick(this)">
@@ -80,33 +80,28 @@
         <div id="keyboard" class="grid w-full relative bottom-0 aspect-[1.17/1] p-6" > <!--KEYBOARD START-->
             <style>#keyboard.down{margin-bottom: -100%; transition: margin-bottom 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; transition: margin-bottom 0.2s ease-in-out;}</style>
             <div id="utilities" class="row-span-1 flex justify-around h-[60%] grayscale"></div>
-            <div class="keys grid grid-cols-4 h-full row-span-4 mt-0 pt-0 text-2xl min-[360px]:text-3xl font-bold text-gray-700">
-                <div class="col-span-3 grid grid-cols-3 grid-rows-4 h-full items-center">
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >1</div> 
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >2</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >3</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >4</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >5</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >6</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >7</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >8</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >9</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >00</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >0</div>
-                    <div class="numeric flex justify-center rounded-full bg-gray-200 aspect-[1/1] flex items-center h-[90%]" >.</div>
-                </div>
+            <img id="buttons" class="h-[100%]" src="Ressources/keyboard map/default.png" alt="keyboard" usemap="#keyss">
+            <map name="keyss">
+                <area shape="circle" coords="50,50,45" alt="1" class="numbers">
+                <area shape="circle" coords="150,50,45" alt="2" class="numbers">
+                <area shape="circle" coords="250,50,45" alt="3" class="numbers">
+                <area shape="circle" coords="50,150,45" alt="4" class="numbers">
+                <area shape="circle" coords="150,150,45" alt="5" class="numbers">
+                <area shape="circle" coords="250,150,45" alt="6" class="numbers">
+                <area shape="circle" coords="50,250,45" alt="7" class="numbers">
+                <area shape="circle" coords="150,250,45" alt="8" class="numbers">
+                <area shape="circle" coords="250,250,45" alt="9" class="numbers">
+                <area shape="circle" coords="50,350,45" alt="00" class="numbers">
+                <area shape="circle" coords="150,350,45" alt="0" class="numbers">
+                <area shape="circle" coords="250,350,45" alt="." class="numbers">
 
-                <div class="operators col-span-1 grid grid-rows-4  pl-2 items-center">
-                    <div class="key row-span-1 flex justify-center items-center rounded-xl border border-gray-700 bg-white h-[90%]" id="remise">%</div>
-                    <div id="ic_nextBtnContainer" class="row-span-2 h-[90%]"></div>
-                    <div id="ic_bSpaceContainer" class="row-span-1 h-[90%]"></div>
-                </div>
-                
+                <area shape="rect" coords="306,5,396,109" alt="remise" onclick="console.log('remise'); switchImgs(this.alt)" >
+                <area shape="rect" coords="306,125,396,315" alt="next" onclick="ic_nextBtn.OnclickEvent(); switchImgs(this.alt)">
+                <area shape="rect" coords="306,321,396,411" alt="backspace" onclick="ic_backspace.OnclickEvent(); switchImgs(this.alt)">
 
 
-            </div>
 
-        </div> <!--KEYBOARD END-->
+            </map>
         </div>
     </div>
     

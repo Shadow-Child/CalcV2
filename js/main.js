@@ -32,9 +32,9 @@ let Utilitiesicons = {
 
 
 function setOnClick() { //SETS ONCLICK FUNCTION FOR EVERY NUMBER
-    let numbers = document.querySelectorAll('.numeric');
+    let numbers = document.querySelectorAll('.numbers');
     for (let i = 0; i < numbers.length; i++) {
-        numbers[i].setAttribute('onclick', `handleClick(this.innerHTML);`)
+        numbers[i].setAttribute('onclick', `handleClick(this.alt); switchImgs(this.alt)`)
     }
     
 }
@@ -53,6 +53,7 @@ function putUtilitiesIcons(icons) { //PUTS UTILITIES ICONS IN PLACE OVER THE KEY
 
 window.onload =  (event) => {
 
+    document
     this.addEventListener("resize", (event)=> {setScreenHeight()});
     ic_date.render(document.getElementById("ic_dateContainer"));
     setOnClick();
@@ -65,9 +66,9 @@ window.onload =  (event) => {
     ic_discard.render(document.getElementById("ic_discardContainer"));
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
-    ic_nextBtn.render(document.getElementById("ic_nextBtnContainer"))
-    ic_backspace.render(document.getElementById("ic_bSpaceContainer"));
-    
+    //ic_nextBtn.render(document.getElementById("ic_nextBtnContainer"))
+    //ic_backspace.render(document.getElementById("ic_bSpaceContainer"));
+    setTicketDate();
     swipeDownDetect(document.getElementById("total-box"))
 
 }
@@ -194,6 +195,11 @@ function swipeDownDetect(el){ //DETECTS IF THE CALCULATOR'S IS SWIPED UP OR DOWN
     })
 
     touchsurface.addEventListener('touchmove', function(e){
+        e.preventDefault();
+        /*var touchobj = e.changedTouches[0]
+        let distY = touchobj.pageY - startY
+
+        console.log(distY)*/
     })
 
     touchsurface.addEventListener('touchend', function(e){
@@ -706,7 +712,7 @@ function validateTicket(){ //SAVES THE TICKET TO LOCAL STORAGE FOR FUTURE USAGE
 
 function setTicketNbr(){ //  #UNDER TEST#   WILL CHECK PREVIOUS TICKETS FROM PREVIOUS TIMES TO IDENTIFY THE NUMBER OF THE ACTUAL TICKET 
    
-    let ticketNumber= document.getElementById("num-ticket")
+    let ticketNumber= document.getElementById("ic_NTicket")
     for (let i = 0; i < 7;i++) {
         if (localStorage[getEarlyDate(i)]) {
             let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
@@ -908,13 +914,29 @@ function setScreenHeight(){
     let parentHeight= document.getElementById("calculator").offsetHeight;
     let keyboardHeight= document.getElementById("keyboard").offsetHeight;
     //document.getElementById("screen").removeAttribute("class");
-    document.getElementById("screen").setAttribute("class",`flex flex-col transition-[height] duration-200 ease-in-out flex-1`);
+    document.getElementById("screen").setAttribute("class",`flex flex-col transition-[height] duration-200 ease-in-out flex-1 h-[${parentHeight-keyboardHeight}px]`);
 
 }
 
 
 
+function switchImgs(newImgTag){
+    let current= document.getElementById("buttons");
+    if (newImgTag== ".") {
+        newImgTag= ","
+    }
 
+    let newPath= "Ressources/keyboard map/"+ newImgTag + ".png";
+    current.setAttribute("src", newPath)
+
+    setTimeout(()=> current.setAttribute("src", "Ressources/keyboard map/default.png")
+    ,100)
+}
+
+
+function setTicketDate(){
+    Ticket.date= ic_date.dateValue;
+}
 
 
 

@@ -21,7 +21,7 @@ let ic_discard={
         })
     
         Ticket.state= "EMPTY"; //RESET THE TICKET'S STATE TO "EMPTY"
-        document.getElementsByClassName("time")[0].innerHTML= "-:-:-";
+        //document.getElementsByClassName("time")[0].innerHTML= "-:-:-";
 
     },
 
@@ -378,6 +378,27 @@ ic_openTime={
             <div>${value}</div>
         `
     }
+}
+
+ic_TicketNumber={
+    container: null,
+    number: null,
+
+    setNumber: function(newValue){
+        this.number= newValue;
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= ic_html();
+    },
+
+    ic_html: function(){
+        return `
+            <div>#${this.number.padStart(6,0)}</div>
+        `
+    }
+    
 }
 
 
