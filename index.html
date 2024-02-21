@@ -10,9 +10,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
     <title>Yumurta Calculator Lite</title>
+
+    <style>
+        /* width */
+        ::-webkit-scrollbar {
+          width: 5px;
+          position: absolute;
+        }
+        
+        /* Track */
+        ::-webkit-scrollbar-track {
+          opacity: 0;
+        }
+         
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+          background: #888; 
+        }
+        
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+          background: #555; 
+        }
+        </style>
+
 </head> 
 
-<body class="flex justify-center h-svh  overflow-hidden">
+<body class="flex justify-center h-svh overflow-hidden select-none">
+
 
     <div id="calculator" class="bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
 
@@ -23,39 +48,8 @@
                 <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
             </div>
 
-            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick(this)">
+            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick()">
 
-                <template id="articleTemplate">
-
-                    <div class="Article flex min-h-[3rem] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
-
-                        <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); deleteArticle(this); setTimeout(()=>render(), 300)">x</div>
-                        <div  class="Article-Info flex flex-[7_0_0%] h-full items-center">
-                            
-                            <div class="price flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="editPrice(this); event.stopPropagation();">
-                                <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
-                                
-                                <div class="coma text-3xl max-[320px]:text-2xl">,</div>
-                                    <div class="flex flex-col relative">
-                                        <div class="currency leading-none max-[320px]:text-sm absolute bottom-6 max-[360px]:hidden">DT</div>
-                                        <div class="millimes-box text-2xl leading-none max-[320px]:text-xl">000</div>
-                                    </div>
-
-                            </div>
-                        
-                        
-                            <div class="quantity-box flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="editQuantity(this); event.stopPropagation();">
-
-                                <div class="multiply text-lg h-full flex items-end">x</div>
-                                <div class="quantity text-4xl max-[320px]:text-2xl">22</div>
-                                
-                            </div>
-                            <div class="number flex-[1_7_0%] h-full flex justify-center items-center border-dashed border-l border-black text-gray-500 text-xl">&#9664</div>
-                        </div>
-
-                    </div>
-                    
-                </template>
 
                     <div id="Articles" class="w-full overflow-x-hidden flex flex-col-reverse h-full"></div>
 
@@ -63,8 +57,8 @@
             </div>
         
             <div id="total-box" class="z-10 bg-slate-100 flex flex-row w-full aspect-[5/1] rounded-b-2xl outline outline-1 font-bold">
-                <div id="ic_discardContainer" class="flex-[1_0_0%]"></div>
 
+                <div id="ic_discardContainer" class="flex-[1_0_0%]"></div>
                 <div id="ic_totalContainer" class="flex-[3_0_0%]"></div>
                 <div id="ic_validateContainer" class="flex-[1_0_0%]"></div>
 
@@ -80,24 +74,24 @@
         <div id="keyboard" class="grid w-full relative bottom-0 aspect-[1.17/1] p-6" > <!--KEYBOARD START-->
             <style>#keyboard.down{margin-bottom: -100%; transition: margin-bottom 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; transition: margin-bottom 0.2s ease-in-out;}</style>
             <div id="utilities" class="row-span-1 flex justify-around h-[60%] grayscale"></div>
-            <img id="buttons" class="h-[100%]" src="Ressources/keyboard map/default.png" alt="keyboard" usemap="#keyss">
+            <img id="buttons" class="w-[100%]" src="Ressources/keyboard map/default.png" alt="keyboard" usemap="#keyss">
             <map name="keyss">
-                <area shape="circle" coords="50,50,45" alt="1" class="numbers">
-                <area shape="circle" coords="150,50,45" alt="2" class="numbers">
-                <area shape="circle" coords="250,50,45" alt="3" class="numbers">
-                <area shape="circle" coords="50,150,45" alt="4" class="numbers">
-                <area shape="circle" coords="150,150,45" alt="5" class="numbers">
-                <area shape="circle" coords="250,150,45" alt="6" class="numbers">
-                <area shape="circle" coords="50,250,45" alt="7" class="numbers">
-                <area shape="circle" coords="150,250,45" alt="8" class="numbers">
-                <area shape="circle" coords="250,250,45" alt="9" class="numbers">
-                <area shape="circle" coords="50,350,45" alt="00" class="numbers">
-                <area shape="circle" coords="150,350,45" alt="0" class="numbers">
-                <area shape="circle" coords="250,350,45" alt="." class="numbers">
+                <area shape="circle" alt="1" class="numbers">
+                <area shape="circle" alt="2" class="numbers">
+                <area shape="circle" alt="3" class="numbers">
+                <area shape="circle" alt="4" class="numbers">
+                <area shape="circle" alt="5" class="numbers">
+                <area shape="circle" alt="6" class="numbers">
+                <area shape="circle" alt="7" class="numbers">
+                <area shape="circle" alt="8" class="numbers">
+                <area shape="circle" alt="9" class="numbers">
+                <area shape="circle" alt="00" class="numbers">
+                <area shape="circle" alt="0" class="numbers">
+                <area shape="circle" alt="." class="numbers">
 
-                <area shape="rect" coords="306,5,396,109" alt="remise" onclick="console.log('remise'); switchImgs(this.alt)" >
-                <area shape="rect" coords="306,125,396,315" alt="next" onclick="ic_nextBtn.OnclickEvent(); switchImgs(this.alt)">
-                <area shape="rect" coords="306,321,396,411" alt="backspace" onclick="ic_backspace.OnclickEvent(); switchImgs(this.alt)">
+                <area shape="rect" alt="remise" class="operators" onclick="console.log('remise'); switchImgs(this.alt)" >
+                <area shape="rect" alt="next" class="operators" onclick="ic_nextBtn.OnclickEvent(); switchImgs(this.alt)">
+                <area shape="rect" alt="backspace" class="operators" onclick="ic_backspace.OnclickEvent(); switchImgs(this.alt)">
 
 
 
@@ -106,7 +100,7 @@
     </div>
     
 
-    <div id="printScreen" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-auto">
+    <!--<div id="printScreen" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-auto">
         <div class="printNavBar flex justify-between border-b-2 border-dashed border-black aspect-[10/1] items-center pl-4 pr-4">
             <div class="goBack" onclick="returnToCalc()"> &#8592; Retour </div>
             <div class="print" onclick="printTicket();">Print &#8594;</div>
@@ -163,6 +157,71 @@
                     <div id="closeTime"></div>
                 </div>
 
+            </div>
+        </div>
+
+    </div>-->
+
+    <div id="printScreen" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-auto">
+        <div class="printNavBar flex justify-between border-b-2 border-dashed border-black aspect-[10/1] items-center pl-4 pr-4">
+            <div class="goBack" onclick="returnToCalc()"> &#8592; Retour </div>
+            <div class="print" onclick="printTicket();">Print &#8594;</div>
+        </div>
+        
+        <div id="ticket" class="overflow-auto">
+            <div class="ticketHead flex p-6">
+                <div class="logo w-[4rem] flex items-center">
+                    <img src="Ressources/Imgs/Y-logo.png" >
+                </div>
+                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl m-auto">UMURTA STORE</div>
+
+            </div>
+            <div class="generalInfo mb-6 border-b-2 border-t-2 w-[85%] m-auto pb-4 pt-4 border-gray-400 border-dashed flex justify-around text-sm flex-wrap">
+                    <div id="ticketId"></div>
+                    <div id="length"></div>
+            </div>
+            <div class="goods text-right">
+
+                <div class="titles flex w-[85%] m-auto justify-between">
+
+                    <div class="w-[3rem] text-left">Prix</div>                    
+                    <div>Qté</div>
+                    <div class="w-[4.6rem]">Total</div>
+                    
+                </div>
+                <template id="ticketLineTemplate">
+                    <div class="ligne aspect-[10/1] w-[85%] m-auto flex justify-between">
+                        <div id="Price" class="w-[4.6rem]"></div> 
+                        <div id="Qte" class="w-[1.25rem]"></div>
+                        <div id="Tot.u" class="w-[4.6rem] text-right"></div>
+                     </div>
+                </template>
+                <div class="data justify-center mt-4 mb-8  relative">
+                    <div class="border-l h-[95%] border-black absolute left-[36%] top-0"></div>                    
+                    <div class="border-l h-[95%] border-black absolute left-[65%] top-0"></div>
+                </div>
+                <div class="totalTicket flex justify-between w-[85%] m-auto mt-6 mb-6 border-t-2 border-dashed border-gray-400">
+                    <div class="font-bold">Total:</div>
+                    <div id="TotalVal" class="font-bold"></div>
+                </div>
+                
+            </div>
+            <div class="ticketFooter text-center w-fit mb-4 m-auto flex flex-col items-center">
+                <div class="w-fit flex">
+                    <div>Date:</div>
+                    <div id="date-t"></div>
+                </div>
+
+                <div class="w-fit flex">
+                    <div>Temps:</div>
+                    <div id="closeTime"></div>
+                </div>
+
+                <div id="qrCode" class="w-[60%] m-[10%]">
+                    <img src="Ressources/Imgs/qrCode.png" alt="">
+                </div>
+
+                <div id="msg">Merci pour votre visite!</div>
             </div>
         </div>
 

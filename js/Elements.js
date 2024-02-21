@@ -14,15 +14,9 @@ let ic_discard={
     },
 
     OnclickEvent: function(){
-        let articles= Ticket.content.map(el=> (el.id));
-        articles.forEach(el=>{ //DELETES THE ARTICLES FROM THE DOM ONE BY ONE
-            let element= document.getElementById(`${el}`)
-            deleteArticle(element.children[0]) //DELETES THE ARTICLES FROM THE DOM AND THE CONTENT JSON ONE BY ONE
-        })
-    
-        Ticket.state= "EMPTY"; //RESET THE TICKET'S STATE TO "EMPTY"
-        //document.getElementsByClassName("time")[0].innerHTML= "-:-:-";
-
+       Ticket.content.forEach(el => {
+        el.deleteArticle()
+       })
     },
 
     ic_html: function(){
@@ -75,9 +69,9 @@ let ic_validate={
     OnclickEvent: function(){
         if(this.count> 0){
         setCloseTime();
-        Ticket.content= Ticket.content.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
+        let validContent= Ticket.content.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
     
-        let articlesData = Ticket.content.map(el=> {
+        let articlesData = validContent.map(el=> {
         //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
             return {
                 "total"     :   el.total,
@@ -98,7 +92,7 @@ let ic_validate={
             "date":             Ticket.date
     })
     
-        clearAll()
+        Ticket.content.forEach(el=>{el.deleteArticle()})
         localStorage[`${Ticket.date}`]= JSON.stringify(dailyTickets);
         Ticket.ticketId += 1;
         ic_openTime.render(ic_openTime.container,ic_openTime.default)
@@ -224,26 +218,32 @@ let ic_nextBtn={
             ic_openTime.setTimeValue()
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
             
-            addArticle()
+            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
+            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
+            counter+= 1;
+
             Ticket.state= "NOT-EMPTY"
         }
 
         if(actualEdit== undefined ){
             let notValid= Ticket.content.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
             if (notValid.length != 0) { //IF THERE IS AN INVALID ARTICLE, ITS STATE WILL CHANGE TO "FOCUSED" IT IT WILL START EDITING
-                startEditing(notValid[0]);
-                startEditing(notValid[0].price);
+                notValid[0].editPrice();
             } else{
-            addArticle()
+
+                Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
+                Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
+                counter+= 1; console.log(Ticket.count)
+
             Ticket.state= "NOT-EMPTY"
             }
         }
 
         else if (actualEdit.state== "FOCUSED" && priceState== "FOCUSED" && actualEdit.price.numeric !=0 && actualEdit.price.value != "." && actualEdit.price.value != "" ){
             // IF AN ARTICLE IS "FOCUSED" AND IT'S PRICE IS "FOCUSED" AND THE PRICE VALUE IS VALID, PRICE WILL BE BLUR AND QUANTITY WILL BE "FOCUSED"
-            startEditing(actualEdit.quantity);
-            stopEditing(actualEdit.price);
-            calcEachTotal();
+            actualEdit.editQuantity();
+            actualEdit.calcTotal();
+
             calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
@@ -252,42 +252,42 @@ let ic_nextBtn={
         else if( actualEdit.state== "FOCUSED" && articleState== "FOCUSED" && actualEdit.quantity.numeric !=0 ){
             // IF AN ARTICLE IS "FOCUSED" AND IT'S QUANTITY IS "FOCUSED" AND THE PRICE VALUE IS VALID, THE ARTICLE WILL BECOME VALID AND IT WILL LOSE FOCUS
             actualEdit.valid= "YES";
-            stopEditing(actualEdit);
-            stopEditing(actualEdit.quantity);
-            calcEachTotal();
+            actualEdit.stopEdit();
+            actualEdit.calcTotal();
             calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
-
 
             let notValid= Ticket.content.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
             //IF AN INVALID ARTICLE IS LEFT BEHIND, IT WILL BE FOCUSED NEXT
-                startEditing(notValid[0]);
-                startEditing(notValid[0].price);
-                highlightSelectedArticle()
-                highlightSelectedText()
+                notValid[0].editPrice();
             } else{
-            //IF THE IS NO INVALID ARTICLES A NEW ARTICLE BOX WILL BE ADDED
-                addArticle();
+            //IF THERE IS NO INVALID ARTICLES A NEW ARTICLE BOX WILL BE ADDED
+            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
+            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
+            counter+= 1;
             }
+
+            refreshArticlesIndicator();
     
         }
         else if(actualEdit.state== "FOCUSED" && articleState== "BLUR" && priceState== "BLUR" && actualEdit.valid== "YES"){
-            stopEditing(actualEdit);
-            addArticle();
+            actualEdit.stopEdit();
+            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
+            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
+            counter+= 1;
         }
-
     
     },
 
-    ic_html: function(){
+    /*ic_html: function(){
 
         return`
             <div id="suivant" class="flex justify-center items-center rounded-xl border border-gray-700 bg-green-100 h-full" onclick="ic_nextBtn.OnclickEvent();">
             ->]
             </div>
         `
-    }
+    }*/
 }
 
 
@@ -303,10 +303,10 @@ let ic_backspace={
 
         if (ActualEdit.price.state == "FOCUSED") {
             ActualEdit.price.value = ActualEdit.price.value.slice(0, -1);
-            displayPrice(ActualEdit);
+            ActualEdit.renderPrice();
         } else if (ActualEdit.quantity.state== "FOCUSED") {
             ActualEdit.quantity.value = ActualEdit.quantity.value.slice(0, -1);
-            displayQuantity(ActualEdit);
+            ActualEdit.renderQuantity();;
             if (ActualEdit.quantity.value.length == 0) {
                 ActualEdit.quantity.value = "1";
                 ActualEdit.quantity.mode = "REPLACE"
@@ -366,6 +366,8 @@ ic_openTime={
         let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
 
         this.timeValue= currentDateTime.split(" ")[1]; // "12:32:16"
+
+        Ticket.openTime= this.timeValue; // For the moment until Ticket component is created
     },
 
     render: function(target, value){
@@ -407,131 +409,50 @@ ic_TicketNumber={
 
 
 
+class newArticle{
+
+    constructor(id, container){ //A Class of newArticle
+
+        this.id=         id;
+        this.state=      "FOCUSED"; // Possible states ["BLUR","BLUR", "FOCUSED"]
+        this.valid=      "NO";
+        this.container=  container;
+        this.indicator=       null;
 
 
+        this.price=       {
+            state:      "FOCUSED",    //Possible states["FOCUSED", "BLUR"]
+            mode:       "REPLACE",  //Possible states["REPLACE", "APPEND"]
+            value:      "0",
+            numeric:     0,
+        };
 
+        this.quantity=   {
+            state:      "BLUR",  //Possible states["FOCUSED", "BLUR"]
+            mode:       "REPLACE", //Possible states["REPLACE", "APPEND"]
+            value:      "1",
+            numeric:     1,
+        };
 
-let ic_Ticket={ // Still not sure about it 
-    
-    container: null,
-    state: "EMPTY",
-    content:[],
-    count: 0,
-    id: null,
-    date: null,
-    openTime: null,
-    closeTime:null,
-    total: 0,
+        this.total=      0;
 
-    setState: function(newState){
-        this.state= newState;
-    },
+    };
 
-    addContent: function(newarticle){
-        this.content.push(newarticle);
-    },
+    ic_boxHtml= function(){
+        return `
+        <div id="A-${this.id}" class="Article flex min-h-[3rem] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
+        </div>
+        `
+    }  
 
-    setCount: function(){
-        this.count= (this.content.length-1 < 0)?0:(this.content.filter(el=>el.valid=="YES").length);
-    },
-
-    setDate: function(){
-        let today = new Date(); //GETS THE ACTUAL DATE EXAMPLE(  Tue Feb 06 2024 10:39:50 GMT+0100 (heure normale d’Europe centrale)  )
-        let dd = String(today.getDate()).padStart(2, '0'); // "06"
-        let mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!    // "02"
-        let yyyy = String(today.getFullYear());// "2024"
-
-        this.date= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
-    },
-
-    addCount: function(){
-        this.count= this.count+1;
-    },
-
-    setTicketId: function(){
-        for (let i = 0; i < 7;i++) {
-            if (localStorage[getEarlyDate(i)]) {
-                let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
-                this.id= prevdailyTickets[prevdailyTickets.length-1].ticketId+1
-                break
-            }
-        }
-    },
-
-    setOpenTime: function(){
-        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
-        let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
-        let time= currentDateTime.split(" ")[1]; // "12:32:16"
-        document.getElementsByClassName("time")[0].innerHTML= time;
-        this.openTime= time;
-    },
-
-    setCloseTime: function(){
-        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
-        let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
-        let time= currentDateTime.split(" ")[1]; // "12:32:16"
-        document.getElementsByClassName("time")[0].innerHTML= time;
-        this.openTime= time;
-    },
-
-    setTotal: function(){
-        this.total= this.content.filter(el=> el.valid== "YES").reduce((sum, currentVal)=> sum + currentVal.total, 0);
-    },
-
-    createArticleBox: function(ArticleId){  
-        let t= document.createElement("template");
-        t.innerHTML= ic_html_template(ArticleId);
-        return t.content;
-    },
-
-    renderPrice: function(ArticleId){
-        let article = document.getElementById(`${ArticleId}`)
-        let activeDinars= article.children[1].children[0].children[0];
-        let activeMillim = article.children[1].children[0].children[2].children[1];
-
-        let value=  el.price.value;
-        if(!value.includes('.')){ //IF THE VALUE OF PRICE CONTAINS A "." ALREADY IT TURNS IT INTO A FLOAT
-            value= makeFloat(value);
-        }
-        el.price.numeric= parseFloat(value)
-
-        let splitted = value.split(".");                        //EXAMPLE:    VALUE= "6,5"  / SPLITTED= ["6","5"]
-        activeDinars.innerHTML= splitted[0].padStart(1, 0);     // "6"
-        activeMillim.innerHTML= splitted[1].padEnd(3,0);        // "500"
-    },
-
-    renderQuantity: function(ArticleId){
-        let article= document.getElementById(`${ArticleId}`)
-        let quantityText= article.children[1].children[1].children[1];
-
-        el.quantity.numeric= parseFloat(el.quantity.value);
-        quantityText.innerHTML= el.quantity.value.padStart(2,0)
-    },
-
-
-    renderArticle: function(ArticleId){
-
-        this.createArticleBox(ArticleId);
-        this.renderPrice(ArticleId);
-        this.renderQuantity(ArticleId);
-    },
-
-
-    actualEdit: function(){
-        return this.content.filter(el=> el.state== "FOCUSED")
-    },
-
-
-    ic_html_template: function(Id){
-         
+    ic_contentHtml= function(){
         return`
-
-            <div id="${Id}" class="Article flex min-h-[3rem] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
-
-                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); deleteArticle(this); setTimeout(()=>render(), 300)">x</div>
-                <div  class="Article-Info flex flex-[7_0_0%] h-full items-center">
+    
+    
+                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); Ticket.content.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
+                <div id="Article-Info"  class="${this.state} flex flex-[7_0_0%] h-full items-center">
                     
-                    <div class="price flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="editPrice(this); event.stopPropagation();">
+                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="Ticket.content.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
                         <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
                         
                         <div class="coma text-3xl max-[320px]:text-2xl">,</div>
@@ -539,12 +460,12 @@ let ic_Ticket={ // Still not sure about it
                                 <div class="currency leading-none max-[320px]:text-sm absolute bottom-6 max-[360px]:hidden">DT</div>
                                 <div class="millimes-box text-2xl leading-none max-[320px]:text-xl">000</div>
                             </div>
-
+    
                     </div>
                 
                 
-                    <div class="quantity-box flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="editQuantity(this); event.stopPropagation();">
-
+                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="Ticket.content.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
+    
                         <div class="multiply text-lg h-full flex items-end">x</div>
                         <div class="quantity text-4xl max-[320px]:text-2xl">22</div>
                         
@@ -552,40 +473,200 @@ let ic_Ticket={ // Still not sure about it
                     <div class="number flex-[1_7_0%] h-full flex justify-center items-center border-dashed border-l border-black text-gray-500 text-xl">&#9664</div>
                 </div>
 
-            </div>
+            <style>
+
+                #price-box.FOCUSED{
+                    color: red;
+                }
+        
+                #quantity-box.FOCUSED{
+                    color: red;
+                }
+        
+                #Article-Info.FOCUSED{
+                    background: lightgreen;
+                }
+        
+            </style>
+    
         `
-    },
+    }
+
+    createArticleBox= function(){
+
+        if(Ticket.state== "EMPTY"){
+            Ticket.state= "NOT-EMPTY"
+        }
+
+        let t= document.createElement("template");
+        t.innerHTML= this.ic_boxHtml();
+        this.container.insertBefore(t.content, this.container.children[0]);
+        this.render();
+    };
+
+    render=function(){
+        document.getElementById(`A-${this.id}`).innerHTML= this.ic_contentHtml();
+        this.renderPrice();
+        this.renderQuantity();
+    };
+
+    renderPrice= function(){
+        let article = document.getElementById(`A-${this.id}`)
+        let activeDinars= article.children[1].children[0].children[0];
+        let activeMillim = article.children[1].children[0].children[2].children[1];
+        let value=  this.price.value;
+        if(!value.includes('.')){ //IF THE VALUE OF PRICE CONTAINS A "." ALREADY IT TURNS IT INTO A FLOAT
+            value= makeFloat(value);
+        }
+        this.price.numeric= parseFloat(value)
+
+        let splitted = value.split(".");                        //EXAMPLE:    VALUE= "6,5"  / SPLITTED= ["6","5"]
+        activeDinars.innerHTML= splitted[0].padStart(1, 0);     // "6"
+        activeMillim.innerHTML= splitted[1].padEnd(3,0);        // "500"
+    };
+
+    renderQuantity= function(){
+        let article= document.getElementById(`A-${this.id}`)
+        let quantityText= article.children[1].children[1].children[1];
+
+        this.quantity.numeric= parseFloat(this.quantity.value);
+        quantityText.innerHTML= this.quantity.value.padStart(2,0)
+    };
+
+    deleteArticle= function(){
+
+        Ticket.content= Ticket.content.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
+        if(Ticket.content.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
+            Ticket.state= "EMPTY" 
+            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
+        }
+        else {
+            Ticket.state= "NOT-EMPTY";
+        }
+    
+        document.getElementById(`A-${this.id}`).classList.add("ml-[200%]");
+
+        setTimeout(()=>this.container.removeChild(document.getElementById(`A-${this.id}`)), 300)
+
+        calcTicketTotal();
+        refreshArticlesIndicator()
+        ic_discard.render(document.getElementById("ic_discardContainer"));
+        ic_validate.render(document.getElementById("ic_validateContainer"));
+        ic_total.render(document.getElementById("ic_totalContainer"));
+    
+    }
+    
+    editPrice= function(){
+        let prev= Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        prev?.stopEdit();
+        prev?.calcTotal();
+        ic_total.render(document.getElementById("ic_totalContainer"))
+
+        this.state="FOCUSED";
+        this.price.state= "FOCUSED";
+        this.price.mode= "REPLACE"
+        this.quantity.state= "BLUR";
+
+        this.render()
+    };
+
+    editQuantity= function(){
+        let prev= Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        prev?.stopEdit();
+        prev?.calcTotal();
+        ic_total.render(document.getElementById("ic_totalContainer"));
+
+        this.state="FOCUSED"
+        this.price.state= "BLUR";
+        this.quantity.state= "FOCUSED"
+        this.quantity.mode= "REPLACE"
+
+        this.render()
+    };
+
+    stopEdit= function(){
+        this.calcTotal();
+        ic_total.render(document.getElementById("ic_totalContainer"));
+
+        this.state="BLUR"
+        this.price.state= "BLUR";
+        this.quantity.state= "BLUR";
+        
+        this.render()
+    }
+
+    calcTotal= function(){
+        this.total= this.price.numeric * this.quantity.numeric
+    }
 
 
+    renderIndicator= function(){
+
+        this.indicator= Ticket.content.indexOf(Ticket.content.filter(el=> el.id== this.id)[0])+1
+        document.getElementById(`A-${this.id}`).children[1].children[2].innerHTML= this.indicator;
+    };
 
 
 }
 
 
-let ic_article={
-
-    id:         null,
-    state:      "FOCUSED", // Possible states ["BLUR","BLUR", "FOCUSED"]
-    valid:      "NO",
 
 
-    price:       {
-        state:      "BLUR",    //Possible states["FOCUSED", "BLUR"]
-        mode:       "REPLACE",  //Possible states["REPLACE", "APPEND"]
-        value:      "0",
-        numeric:     0,
+
+let ic_Ticket={ //UNDER DEVELOPMENT
+
+    container:  null,
+    state:      "EMPTY",
+    content:    [],
+    total:      null,
+    openTime:   null,
+    closeTime:  null,
+    date:       null,
+    count:      null,
+    ticketId:   null,
+
+    addContent: function(){
+
     },
 
-    quantity:   {
-        state:      "BLUR",  //Possible states["FOCUSED", "BLUR"]
-        mode:       "REPLACE", //Possible states["REPLACE", "APPEND"]
-        value:      "1",
-        numeric:     1,
+    setState: function(){
+
     },
 
-    total:      0
+    calcTicketTotal: function(){
 
-   
+    },
+
+    setOpenTime: function(){
+
+    },
+
+    setCloseTime: function(){
+
+    },
+
+    setTicketId: function(){
+
+    },
+
+    setTicketCount: function(){
+
+    },
+
+    setTicketDate: function(){
+
+    },
+
+
+    render: function(){
+
+    },
+
+    ic_html: function(){
+        return //HTML GOES HERE
+    }
+
+
 }
 
 
