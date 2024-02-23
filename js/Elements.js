@@ -14,7 +14,7 @@ let ic_discard={
     },
 
     OnclickEvent: function(){
-       Ticket.content.forEach(el => {
+       ic_Ticket.content.forEach(el => {
         el.deleteArticle()
        })
     },
@@ -68,8 +68,8 @@ let ic_validate={
 
     OnclickEvent: function(){
         if(this.count> 0){
-        setCloseTime();
-        let validContent= Ticket.content.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
+        ic_Ticket.setCloseTime();
+        let validContent= ic_Ticket.content.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
     
         let articlesData = validContent.map(el=> {
         //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
@@ -84,20 +84,20 @@ let ic_validate={
     
         dailyTickets.push({ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
             "content":          articlesData,
-            "timeOpen":         Ticket.openTime,
-            "timeClose":        Ticket.closeTime,
-            "totalTicket":      Ticket.total,
-            "ticketId":         Ticket.ticketId,
-            "count":            Ticket.count,
-            "date":             Ticket.date
+            "timeOpen":         ic_Ticket.openTime,
+            "timeClose":        ic_Ticket.closeTime,
+            "totalTicket":      ic_Ticket.total,
+            "ticketId":         ic_Ticket.ticketId,
+            "count":            ic_Ticket.count,
+            "date":             ic_Ticket.date
     })
     
-        Ticket.content.forEach(el=>{el.deleteArticle()})
-        localStorage[`${Ticket.date}`]= JSON.stringify(dailyTickets);
-        Ticket.ticketId += 1;
+        ic_Ticket.content.forEach(el=>{el.deleteArticle()})
+        localStorage[`${ic_Ticket.date}`]= JSON.stringify(dailyTickets);
+        ic_Ticket.ticketId += 1;
         ic_openTime.render(ic_openTime.container,ic_openTime.default)
-        Ticket.closeTime= null;
-        setTicketNbr();
+        ic_Ticket.closeTime= null;
+        ic_TicketNumber.render(ic_TicketNumber.container)
         fillTicket()
         goToPrintScreen();
     }},
@@ -107,8 +107,8 @@ let ic_validate={
 
         return `
             <div id="ic_validate" class="${state} relative flex h-full justify-center items-center" onclick="ic_validate.OnclickEvent();">
-                <div class="nbrIndicator absolute bottom-[50%] max-[320px]:bottom-[40%] border w-[2rem] max-[360px]:w-[1.7rem] aspect-square max-[320px]:aspect-square bg-red-500 rounded-full text-white flex justify-center items-center">${ic_validate.count}</div>
-                <img class="w-[70%] absolute top-6" src="Ressources/Imgs/arrow.png">
+                <div class="nbrIndicator absolute text-2xl w-full text-center bottom-[45%] z-10 text-white">${ic_validate.count}</div>
+                <img class="w-[90%]" src="Ressources/Imgs/arrow.png">
             </div>
             
             <style>
@@ -149,7 +149,7 @@ let ic_total={
 
     setTotalValue: function(newValue){
         this.total.numeric= newValue;
-        let strValue = (this.total.numeric).toFixed(3); //EXAMPLE: Ticket.total= 23.5  / strValue= "23.500" ;
+        let strValue = (this.total.numeric).toFixed(3); //EXAMPLE: ic_Ticket.total= 23.5  / strValue= "23.500" ;
         let splitted = strValue.split("."); //splitted= ["23","500"]
         this.total.dinars= splitted[0];
         this.total.millims= splitted[1];
@@ -197,7 +197,6 @@ let ic_total={
 
 }
 
-
 let ic_nextBtn={
 
     container: null,
@@ -209,33 +208,29 @@ let ic_nextBtn={
     ,
 
     OnclickEvent: function(){
-        let actualEdit= Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+        let actualEdit= ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
         let priceState= actualEdit?.price.state;
         let articleState= actualEdit?.quantity.state;
 
-        if(Ticket.state== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
+        if(ic_Ticket.state== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
             
-            ic_openTime.setTimeValue()
+            ic_Ticket.setOpenTime()
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
             
-            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
-            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
-            counter+= 1;
+            ic_Ticket.addArticle();
 
-            Ticket.state= "NOT-EMPTY"
+            ic_Ticket.setState("NOT-EMPTY");
         }
 
         if(actualEdit== undefined ){
-            let notValid= Ticket.content.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
+            let notValid= ic_Ticket.content.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
             if (notValid.length != 0) { //IF THERE IS AN INVALID ARTICLE, ITS STATE WILL CHANGE TO "FOCUSED" IT IT WILL START EDITING
                 notValid[0].editPrice();
             } else{
 
-                Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
-                Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
-                counter+= 1; console.log(Ticket.count)
+                ic_Ticket.addArticle();
 
-            Ticket.state= "NOT-EMPTY"
+                ic_Ticket.setState("NOT-EMPTY");
             }
         }
 
@@ -244,7 +239,7 @@ let ic_nextBtn={
             actualEdit.editQuantity();
             actualEdit.calcTotal();
 
-            calcTicketTotal();    
+            ic_Ticket.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
             
@@ -254,40 +249,33 @@ let ic_nextBtn={
             actualEdit.valid= "YES";
             actualEdit.stopEdit();
             actualEdit.calcTotal();
-            calcTicketTotal();    
+            ic_Ticket.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
-            let notValid= Ticket.content.filter(el=> el.valid== "NO");
+            let notValid= ic_Ticket.content.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
             //IF AN INVALID ARTICLE IS LEFT BEHIND, IT WILL BE FOCUSED NEXT
                 notValid[0].editPrice();
             } else{
             //IF THERE IS NO INVALID ARTICLES A NEW ARTICLE BOX WILL BE ADDED
-            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
-            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
-            counter+= 1;
+            ic_Ticket.addArticle();
             }
-
-            refreshArticlesIndicator();
     
         }
         else if(actualEdit.state== "FOCUSED" && articleState== "BLUR" && priceState== "BLUR" && actualEdit.valid== "YES"){
             actualEdit.stopEdit();
-            Ticket.content.push(new newArticle(counter, document.getElementById("Articles")))
-            Ticket.content.filter(el=> el.id== counter)[0].createArticleBox();
-            counter+= 1;
+            ic_Ticket.addArticle();
         }
     
+        refreshArticlesIndicator();
     },
 
-    /*ic_html: function(){
+    ic_html: function(){
 
         return`
-            <div id="suivant" class="flex justify-center items-center rounded-xl border border-gray-700 bg-green-100 h-full" onclick="ic_nextBtn.OnclickEvent();">
-            ->]
-            </div>
+        <img id="nextBtn" class="active:brightness-75 w-full" src="Ressources/keyboard keys/next.png" onclick="ic_nextBtn.OnclickEvent();">
         `
-    }*/
+    }
 }
 
 
@@ -299,7 +287,7 @@ let ic_backspace={
     },
 
     OnclickEvent: function(){
-        let ActualEdit= Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+        let ActualEdit= ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
 
         if (ActualEdit.price.state == "FOCUSED") {
             ActualEdit.price.value = ActualEdit.price.value.slice(0, -1);
@@ -318,9 +306,7 @@ let ic_backspace={
     ic_html: function(){
 
         return`
-            <div class="flex justify-center items-center rounded-xl border border-gray-700 bg-red-50 h-full" id="backspace" onclick="ic_backspace.OnclickEvent();">
-                <--
-            </div>    
+                <img id="backspace" class="active:brightness-75 w-full" src="Ressources/keyboard keys/backspace.png" onclick="ic_backspace.OnclickEvent();">
         `
     }
 }
@@ -331,18 +317,11 @@ ic_date={
     container: null,
     dateValue: null,
     
-    setDateValue: function(){
-        
-    var today = new Date(); //GETS THE ACTUAL DATE EXAMPLE(  Tue Feb 06 2024 10:39:50 GMT+0100 (heure normale d’Europe centrale)  )
-    var dd = String(today.getDate()).padStart(2, '0'); // "06"
-    var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!    // "02"
-    var yyyy = String(today.getFullYear());// "2024"
-
-    this.dateValue= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
+    setDateValue: function(newValue){
+      this.dateValue=   newValue;
     },
 
     render: function(target){
-        this.setDateValue();
         this.container= target;
         this.container.innerHTML= this.ic_html();
     },
@@ -361,13 +340,8 @@ ic_openTime={
     timeValue: null,
     default: "-:-:-",
 
-    setTimeValue: function(){
-        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
-        let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
-
-        this.timeValue= currentDateTime.split(" ")[1]; // "12:32:16"
-
-        Ticket.openTime= this.timeValue; // For the moment until Ticket component is created
+    setTimeValue: function(newValue){
+        this.timeValue= newValue;
     },
 
     render: function(target, value){
@@ -392,21 +366,16 @@ ic_TicketNumber={
 
     render: function(target){
         this.container= target;
-        this.container.innerHTML= ic_html();
+        this.container.innerHTML= this.ic_html();
     },
 
     ic_html: function(){
         return `
-            <div>#${this.number.padStart(6,0)}</div>
+            <div>#${(this.number)?.padStart(6,0)}</div>
         `
     }
     
 }
-
-
-
-
-
 
 
 class newArticle{
@@ -449,10 +418,10 @@ class newArticle{
         return`
     
     
-                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); Ticket.content.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
+                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); ic_Ticket.content.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
                 <div id="Article-Info"  class="${this.state} flex flex-[7_0_0%] h-full items-center">
                     
-                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="Ticket.content.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
+                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="ic_Ticket.content.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
                         <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
                         
                         <div class="coma text-3xl max-[320px]:text-2xl">,</div>
@@ -464,7 +433,7 @@ class newArticle{
                     </div>
                 
                 
-                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="Ticket.content.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
+                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="ic_Ticket.content.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
     
                         <div class="multiply text-lg h-full flex items-end">x</div>
                         <div class="quantity text-4xl max-[320px]:text-2xl">22</div>
@@ -494,8 +463,8 @@ class newArticle{
 
     createArticleBox= function(){
 
-        if(Ticket.state== "EMPTY"){
-            Ticket.state= "NOT-EMPTY"
+        if(ic_Ticket.state== "EMPTY"){
+            ic_Ticket.state= "NOT-EMPTY"
         }
 
         let t= document.createElement("template");
@@ -535,20 +504,20 @@ class newArticle{
 
     deleteArticle= function(){
 
-        Ticket.content= Ticket.content.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
-        if(Ticket.content.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
-            Ticket.state= "EMPTY" 
+        ic_Ticket.content= ic_Ticket.content.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
+        if(ic_Ticket.content.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
+            ic_Ticket.state= "EMPTY" 
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
         }
         else {
-            Ticket.state= "NOT-EMPTY";
+            ic_Ticket.state= "NOT-EMPTY";
         }
     
         document.getElementById(`A-${this.id}`).classList.add("ml-[200%]");
 
         setTimeout(()=>this.container.removeChild(document.getElementById(`A-${this.id}`)), 300)
 
-        calcTicketTotal();
+        ic_Ticket.calcTicketTotal();
         refreshArticlesIndicator()
         ic_discard.render(document.getElementById("ic_discardContainer"));
         ic_validate.render(document.getElementById("ic_validateContainer"));
@@ -557,7 +526,7 @@ class newArticle{
     }
     
     editPrice= function(){
-        let prev= Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Ticket.content.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"))
@@ -571,7 +540,7 @@ class newArticle{
     };
 
     editQuantity= function(){
-        let prev= Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Ticket.content.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
@@ -602,16 +571,12 @@ class newArticle{
 
     renderIndicator= function(){
 
-        this.indicator= Ticket.content.indexOf(Ticket.content.filter(el=> el.id== this.id)[0])+1
+        this.indicator= ic_Ticket.content.indexOf(ic_Ticket.content.filter(el=> el.id== this.id)[0])+1
         document.getElementById(`A-${this.id}`).children[1].children[2].innerHTML= this.indicator;
     };
 
 
 }
-
-
-
-
 
 let ic_Ticket={ //UNDER DEVELOPMENT
 
@@ -625,36 +590,75 @@ let ic_Ticket={ //UNDER DEVELOPMENT
     count:      null,
     ticketId:   null,
 
-    addContent: function(){
+    addArticle: function(){
+        
+        this.content.push(new newArticle(counter, document.getElementById("Articles")))
+        this.content.filter(el=> el.id== counter)[0].createArticleBox();
+        counter+= 1;
 
     },
 
-    setState: function(){
-
+    setState: function(newState){
+        this.state= newState;
     },
 
     calcTicketTotal: function(){
-
+        this.total= this.content.filter(el=> el.valid== "YES").reduce((sum, currentVal)=> sum + currentVal.total, 0);
+        ic_total.setTotalValue(this.total)
     },
 
     setOpenTime: function(){
-
+        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
+        let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
+        this.openTime= currentDateTime.split(" ")[1]; // "12:32:16"
+        ic_openTime.setTimeValue(this.openTime); // For the moment until ic_Ticket component is created
     },
 
     setCloseTime: function(){
+        let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
+        let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
+        this.closeTime= currentDateTime.split(" ")[1]; //"12:32:16"
 
+
+        document.getElementById("closeTime").innerHTML= this.closeTime; //Temporary statement 
     },
 
     setTicketId: function(){
 
+        for (let i = 0; i < 7;i++) {
+            if (localStorage[getEarlyDate(i)]) {
+                let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
+                this.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1 
+                break
+            }else{
+                this.ticketId=1
+            }
+        }
+        ic_TicketNumber.setNumber(this.ticketId?.toFixed())
     },
 
     setTicketCount: function(){
 
+        this.count= (ic_Ticket.content.filter(e=> e.valid== "YES").length);
+        ic_validate.setCount(this.count);
     },
 
     setTicketDate: function(){
+        var today = new Date(); //GETS THE ACTUAL DATE EXAMPLE(  Tue Feb 06 2024 10:39:50 GMT+0100 (heure normale d’Europe centrale)  )
+        var dd = String(today.getDate()).padStart(2, '0'); // "06"
+        var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!    // "02"
+        var yyyy = String(today.getFullYear());// "2024"
+    
+        this.date= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
+        ic_date.setDateValue(this.date) 
+    },
 
+    refreshArticlesNumber: function(){
+
+        let validArticles= this.content.filter(el=> el.valid== "YES"); //FILTERS THE VALID ARTICLES
+        validArticles.forEach(el=>{
+            el.renderIndicator()    
+        })
     },
 
 
@@ -670,6 +674,156 @@ let ic_Ticket={ //UNDER DEVELOPMENT
 }
 
 
+let numbers={
+
+    container: null,
+    data:{
+        Btns:[],
+    },
+
+    ox_data:{
+        numbers:[
+            {alt:"1", path: "Ressources/keyboard keys/1.png"},
+            {alt:"2", path: "Ressources/keyboard keys/2.png"},
+            {alt:"3", path: "Ressources/keyboard keys/3.png"},
+            {alt:"4", path: "Ressources/keyboard keys/4.png"},
+            {alt:"5", path: "Ressources/keyboard keys/5.png"},
+            {alt:"6", path: "Ressources/keyboard keys/6.png"},
+            {alt:"7", path: "Ressources/keyboard keys/7.png"},
+            {alt:"8", path: "Ressources/keyboard keys/8.png"},
+            {alt:"9", path: "Ressources/keyboard keys/9.png"},
+            {alt:"00", path: "Ressources/keyboard keys/00.png"},
+            {alt:"0", path: "Ressources/keyboard keys/0.png"},
+            {alt:".", path: "Ressources/keyboard keys/,.png"},
+        ],
+
+    },
+
+    renderBtns: function(){
+        this.createBtns()
+        this.data.Btns.forEach(btn=>{
+            btn.render(document.getElementById("numbers"))
+        })
+    },
+
+    createBtns: function(){
+        this.ox_data.numbers.forEach(e=>{
+            this.data.Btns.push(new ic_numBtn(e))
+        })
+    }
+
+}
 
 
 
+class ic_numBtn {
+
+    constructor({alt, path}){
+        this.alt= alt;
+        this.path= path;
+    }
+
+    container= null;
+
+
+
+    OnclickEvent= function(number){
+
+            if(ic_Ticket.state== "EMPTY"){ 
+                //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
+                ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
+                ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
+                ic_Ticket.count+= 1;
+                
+                ic_openTime.setTimeValue();
+                ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
+        
+                ic_Ticket.state= "NOT-EMPTY"
+            }else if(ic_Ticket.state== "NOT-EMPTY" && ic_Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
+                ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
+                ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
+                ic_Ticket.count+= 1; 
+            }
+        
+        
+            let ActualEdit= ic_Ticket.content.filter(el=> el.state=="FOCUSED")[0];
+        
+        
+            if (ActualEdit.state == "FOCUSED" && ActualEdit.price.state == "FOCUSED") { 
+            //IF THE PRICE IS FOCUSED, THE CLICKED NUBER WILL BE APPEND TO PRICE VALUE
+        
+                if (ActualEdit.price.mode == "REPLACE") {
+                    ActualEdit.price.mode == "APPEND";
+                    setValue(ActualEdit.price, number);
+                    ActualEdit.renderPrice();
+                } 
+                else if(number == "."){
+                //PREVENTS ADDING ANOTHER "." TO THE PRICE VALUE IF IT ALREADY HAVE ONE OR IF PRICE DOES ALREDY HAVE 2 NUMBERS
+                    if(ActualEdit.price.value.includes(".") == true  ||  ActualEdit.price.value.length > 3 ){
+                        ActualEdit.renderPrice();
+        
+                    } 
+                    else {
+                        setValue(ActualEdit.price, number); 
+                        ActualEdit.renderPrice();
+                    }
+                }
+                      
+                else if (ActualEdit.price.value.length < 5 && (ActualEdit.price.value + number).length <= 5) {
+                //THIS TEST PREVENTS ADDING ANOTHER NUMBER TO PRICE VALUE IF IT ALREADY ATTEMPTED ITS MAXIMUM SIZE
+                    setValue(ActualEdit.price, number);
+                    ActualEdit.renderPrice();
+                }
+                else if (ActualEdit.price.value.length < 5 && number.length == 2) {
+                // THIS CONDITION IS TRUE IF THE USER PRESS "00" WHILE THERE IS ONLY A PLACE FOR ONE NUMBER
+                    setValue(ActualEdit.price, number[0]);
+                    ActualEdit.renderPrice();
+                    }
+            }
+        
+        
+        
+            else if (ActualEdit.state == "FOCUSED" && ActualEdit.quantity.state == "FOCUSED" && ActualEdit.quantity.value.length < 2 && number!="." && number!="00") {
+            //IF AN ARTICLE IS FOCUSED AND ITS QUANTITY TEXT IS FOCUSED AND QUANTITY VALUE LENGTH IS LESS THAN 2 AND THE NUMBER PRESSED IS NOT "." (DEFENETLY WE CANT BUY HALF AN ARTICLE)
+            
+                if (ActualEdit.quantity.mode == "REPLACE") {
+                    ActualEdit.quantity.value = number;
+                    ActualEdit.quantity.mode = "APPEND";
+                    ActualEdit.renderQuantity();
+                } else {
+                    setValue(ActualEdit.quantity, number);
+                    ActualEdit.renderQuantity();
+                }
+        
+            }
+
+    };
+ 
+
+    render= function(target){
+        this.container= target;
+
+        let t= document.createElement("template");
+        t.innerHTML= this.ic_html();
+        this.container.appendChild(t.content);  
+    };
+
+
+    ic_html= function(){
+        return `
+        <div class="aspect-square w-[90%] m-auto">
+            <img class="w-full active:brightness-75" src="${this.path}" alt="${this.alt}" onclick="numbers.data.Btns.filter(e=> e.alt==this.alt)[0].OnclickEvent(this.alt)">
+        </div>
+        `
+    }
+}
+
+
+
+
+
+
+/*operators:[
+    {alt:"remise", path: "Ressources/keyboard keys/1.png"},
+    {alt:"next", path: "Ressources/keyboard keys/2.png"},
+    {alt:"backspace", path: "Ressources/keyboard keys/3.png"},]*/

@@ -34,7 +34,7 @@ let Utilitiesicons = {
 function setOnClick() { //SETS ONCLICK FUNCTION FOR EVERY NUMBER
     let numbers = document.querySelectorAll('.numbers');
     for (let i = 0; i < numbers.length; i++) {
-        numbers[i].setAttribute('onclick', `handleClick(this.alt); switchImgs(this.alt)`)
+        numbers[i].setAttribute('onclick', `handleClick(this.alt); switchMapImgs(this.alt)`)
     }
     
 }
@@ -53,22 +53,35 @@ function putUtilitiesIcons(icons) { //PUTS UTILITIES ICONS IN PLACE OVER THE KEY
 
 window.onload =  (event) => {
 
-    this.addEventListener("resize", (event)=> {setScreenHeight(); mapDim()});
-    ic_date.render(document.getElementById("ic_dateContainer"));
-    setOnClick();
-    ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
-
-    mapDim();
-    //putUtilitiesIcons(Utilitiesicons);
-    checkLocalStorage();
-    setTicketNbr();
     setScreenHeight();
+
+    this.addEventListener("resize", (event)=> {setScreenHeight();});
+    checkLocalStorage();
+
+    ic_Ticket.setTicketDate()
+    ic_Ticket.setTicketId();
+
+    ic_date.render(document.getElementById("ic_dateContainer"));
+    ic_TicketNumber.render(document.getElementById("ic_NTicket"));
+    ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default);
+
+    setOnClick();
+    numbers.renderBtns();
+    ic_nextBtn.render(document.getElementById("ic_nextContainer"));
+    ic_backspace.render(document.getElementById("ic_backspaceContainer"))
+
+
+
+    //putUtilitiesIcons(Utilitiesicons);
+
+
+
     ic_discard.render(document.getElementById("ic_discardContainer"));
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
+
     //ic_nextBtn.render(document.getElementById("ic_nextBtnContainer"))
     //ic_backspace.render(document.getElementById("ic_bSpaceContainer"));
-    setTicketDate();
     swipeDownDetect(document.getElementById("total-box"))
 
 }
@@ -94,7 +107,7 @@ window.onload =  (event) => {
 
 dailyTickets=[]; //REPRESENTS THE VALID TICKETS FOR TODAY
 
-Ticket={ //HOLDS THE CUREENT TICKET'S DATA
+ic_Ticket={ //HOLDS THE CUREENT TICKET'S DATA
     state:      "EMPTY",  //["EMPTY", "NOT-EMPTY"]
     content:    [],
     total:      0,
@@ -172,7 +185,6 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
     let myKeyboard= document.getElementById("keyboard");
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.add("h-[98vh]");
     myKeyboard.classList.add("down");
 
     ic_total.setSceenState("EXTENDED");
@@ -180,90 +192,10 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
 
 function shrinkScreen(){ //WILL SHRINK THE CALCULATOR'S SCREEN UP
     let myKeyboard= document.getElementById("keyboard"); 
-    let myScreen= document.getElementById("screen");
 
-    myScreen.classList.remove("h-[98vh]");
     myKeyboard.classList.remove("down");
     ic_total.setSceenState("SHRUNK");
 }
-
-
-
-
-
-function highlightSelectedArticle(){ //HIGHLIGHTS THE ARTICLE IN EDITION (FOCUSED)
-    Ticket.content.forEach((el)=>{ 
-        if(el.state=="FOCUSED"){
-            let highlighted= document.getElementById(`${el.id}`); //SELECT THE ELEMENT FROM THE DOM BY THE ELEMENT'S REGISTRED ID
-            highlighted.classList.add("bg-green-200")
-            let thisClose= highlighted.children[0]
-            thisClose.classList.add("bg-gray-200")
-        }
-        else if(el.state=="BLUR"){
-            let highlighted= document.getElementById(`${el.id}`); //SELECT THE ELEMENT FROM THE DOM BY THE ELEMENT'S REGISTRED ID
-            highlighted.classList.remove("bg-green-200")
-            let thisClose= highlighted.children[0]
-            thisClose.classList.remove("bg-gray-200")
-        }
-    })
-    
-}
-
-
-function highlightSelectedText(){ //HIGHLIGHTS THE TEXT IN EDITION (FOCUSED)
-    Ticket.content.forEach((el)=>{
-        let article= document.getElementById(`${el.id}`); //
-        let priceText= article.children[1].children[0];
-        let quantityText= article.children[1].children[1].children[1]
-
-        if(el.price.state== "FOCUSED"){         //IF PRICE IS FOCUSED IT WILL BE HIGHLGHTED
-            priceText.classList.add("text-red-400");
-
-        }else{      //ELSE HIGHLIGHT WILL BE REMOVED
-            priceText.classList.remove("text-red-400");
-        }
-        
-        if(el.quantity.state== "FOCUSED"){      //IF QUANTITY IS FOCUSED IT WILL BE HIGHLGHTED
-            quantityText.classList.add("text-red-400");
-
-        }else{      //ELSE HIGHLIGHT WILL BE REMOVED
-            quantityText.classList.remove("text-red-400");
-        }
-    })
-
-}
-
-
-
-function displayPrice(el) {  //DISPLAYS THE VALUE OF "PRICE" FOR EACH ARTICLE
-
-
-    let article = document.getElementById(`${el.id}`)
-    let activeDinars= article.children[1].children[0].children[0];
-    let activeMillim = article.children[1].children[0].children[2].children[1];
-    let value=  el.price.value;
-    if(!value.includes('.')){ //IF THE VALUE OF PRICE CONTAINS A "." ALREADY IT TURNS IT INTO A FLOAT
-        value= makeFloat(value);
-    }
-    el.price.numeric= parseFloat(value)
-
-    let splitted = value.split(".");                        //EXAMPLE:    VALUE= "6,5"  / SPLITTED= ["6","5"]
-    activeDinars.innerHTML= splitted[0].padStart(1, 0);     // "6"
-    activeMillim.innerHTML= splitted[1].padEnd(3,0);        // "500"
-};
-
-
-
-
-function displayQuantity(el) { //DISPLAYS THE VALUE OF "QUANTITY" FOR EACH ARTICLE
-
-    //console.log("thats a quantity render")
-    let article= document.getElementById(`${el.id}`)
-    let quantityText= article.children[1].children[1].children[1];
-
-    el.quantity.numeric= parseFloat(el.quantity.value);
-    quantityText.innerHTML= el.quantity.value.padStart(2,0)
-    };
 
 
 
@@ -308,33 +240,15 @@ function swipeLeftDetect(el){
 }
 
 
-function slideDelete(element){ //GIVES A SLIDING EFFECT TO THE DELETED ARTICLE 
-    
-    let article= element.parentElement;
-    article.classList.add("ml-[200%]")
-
-}
-
-
-// ####################################################################
-
-function refreshNumber(){ //REFRESHES THE NUMBER OF EACH VALIDATED ARTICLE ON THE SCREEN
-
-    let validArticles= Ticket.content.filter(el=> el.valid== "YES"); //FILTERS THE VALID ARTICLES
-    validArticles.forEach(el=>{
-        el.renderIndicator()    
-    })
-}
-
-
 
 
 function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDICATOR
 
     //COUNTS HOW MANY VALID ARTICLES IN THE CONTENT ARRAY
-    Ticket.count= (Ticket.content.filter(e=> e.valid== "YES").length);
+    ic_Ticket.refreshArticlesNumber();
+    ic_Ticket.setTicketCount()
 
-    if(Ticket.content.filter(e=> e.valid== "YES").length < 1){ 
+    if(ic_Ticket.count < 1){ 
         ic_discard.setState("inactive");
         ic_validate.setState("inactive");
     } else{ 
@@ -342,8 +256,7 @@ function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDI
         ic_validate.setState("active");
     }
 
-    ic_validate.setCount(Ticket.count)
-    refreshNumber() 
+
 }
 
 
@@ -353,17 +266,6 @@ function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDI
 
 
 
-
-
-//##############################################################################
-//##################### MAKING CHANGES ON STATE START ########################### 
-//##############################################################################
-
-
-
-//##############################################################################
-//###################### MAKING CHANGES ON STATE END ############################ 
-//##############################################################################
 
 
 
@@ -379,21 +281,21 @@ function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDI
 //##############################################################################
 
 function handleScreenClick(){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
-    let actualEdit=Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+    let actualEdit=ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
 
-    if(Ticket.state== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
-        Ticket.state= "NOT-EMPTY"
+    if(ic_Ticket.state== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
+        ic_Ticket.state= "NOT-EMPTY"
 
         ic_openTime.setTimeValue()
         ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
         
-        Ticket.content.push(new newArticle(Ticket.count+1, document.getElementById("Articles")))
-        Ticket.content.filter(el=> el.id== Ticket.count+1)[0].createArticleBox();
-        Ticket.count+= 1;
+        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
+        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
+        ic_Ticket.count+= 1;
     }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
         actualEdit.stopEdit()
 
-        calcTicketTotal();
+        ic_Ticket.calcTicketTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
     }
 
@@ -403,24 +305,24 @@ function handleScreenClick(){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW EL
 function handleClick(number) {  //HANDLES NUMBERS CLICKS AN ASSIGN THEIR VALUE TO "ARTICLES" OR "PRICE" DEPENDING ON THE STATE
 
 
-    if(Ticket.state== "EMPTY"){ 
+    if(ic_Ticket.state== "EMPTY"){ 
         //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
-        Ticket.content.push(new newArticle(Ticket.count+1, document.getElementById("Articles")))
-        Ticket.content.filter(el=> el.id== Ticket.count+1)[0].createArticleBox();
-        Ticket.count+= 1;
+        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
+        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
+        ic_Ticket.count+= 1;
         
         ic_openTime.setTimeValue();
         ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
 
-        Ticket.state= "NOT-EMPTY"
-    }else if(Ticket.state== "NOT-EMPTY" && Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
-        Ticket.content.push(new newArticle(Ticket.count+1, document.getElementById("Articles")))
-        Ticket.content.filter(el=> el.id== Ticket.count+1)[0].createArticleBox();
-        Ticket.count+= 1; 
+        ic_Ticket.state= "NOT-EMPTY"
+    }else if(ic_Ticket.state== "NOT-EMPTY" && ic_Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
+        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
+        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
+        ic_Ticket.count+= 1; 
     }
 
 
-    let ActualEdit= Ticket.content.filter(el=> el.state=="FOCUSED")[0];
+    let ActualEdit= ic_Ticket.content.filter(el=> el.state=="FOCUSED")[0];
 
 
     if (ActualEdit.state == "FOCUSED" && ActualEdit.price.state == "FOCUSED") { 
@@ -472,17 +374,6 @@ function handleClick(number) {  //HANDLES NUMBERS CLICKS AN ASSIGN THEIR VALUE T
     }
 }
 
-
-function setCloseTime(){ //SETS THE TICKET'S CLOSING TIME
-    let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
-    let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
-    let time= currentDateTime.split(" ")[1]; //"12:32:16"
-    document.getElementById("closeTime").innerHTML= time;
-    Ticket.closeTime= time;
-}
-
-
-
 function setValue(path, number) { //SETS THE VALUE OF QUANTITY OR PRICE DEPENDING ON STATE AND MODE
     if (path.mode == "REPLACE") {
         path.value = number;
@@ -491,23 +382,6 @@ function setValue(path, number) { //SETS THE VALUE OF QUANTITY OR PRICE DEPENDIN
     } else if (path.mode == "APPEND")
         path.value += number;
 }
-
-
-
-function setTicketNbr(){ //  #UNDER TEST#   WILL CHECK PREVIOUS TICKETS FROM PREVIOUS TIMES TO IDENTIFY THE NUMBER OF THE ACTUAL TICKET 
-   
-    let ticketNumber= document.getElementById("ic_NTicket")
-    for (let i = 0; i < 7;i++) {
-        if (localStorage[getEarlyDate(i)]) {
-            let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
-            Ticket.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1
-            break
-        }
-    }
-    ticketNumber.innerHTML="#"+ ((Ticket.ticketId).toFixed()).padStart(6,0);
-}
-
-
 
 function makeFloat(value) { //#WILL BE CHANGED# ADDS "." TO PRICE VALUE WHEN THE USER FORGETS TO DO SO
                             //IF FORCES THE USER TO TYPE NUMBERS THAT ARE LESS THAN "100.000"
@@ -521,15 +395,6 @@ function makeFloat(value) { //#WILL BE CHANGED# ADDS "." TO PRICE VALUE WHEN THE
     }
 }
 
-
-function calcTicketTotal(){ //CALCULATES THE SUM OF TOTALS
-
-    Ticket.total= Ticket.content.filter(el=> el.valid== "YES").reduce((sum, currentVal)=> sum + currentVal.total, 0);
-    ic_total.setTotalValue(Ticket.total)
-}
-
-
-
 function getEarlyDate(daysBack){ //RETURNS THE DATE BEFORE A SPECIFIC NUMBER OF DAYS GIVEN AS THE ARGUMENT
 
     let day = new Date();
@@ -541,17 +406,14 @@ function getEarlyDate(daysBack){ //RETURNS THE DATE BEFORE A SPECIFIC NUMBER OF 
     return mm + '/' + dd + '/' + yyyy;
 }
 
-
-
-
 function checkLocalStorage(){ //CHECKS FOR DAILY TICKETS IN LOCAL STORAGE
-    let date= Ticket.date;
+    let date= ic_Ticket.date;
 
     if(date in localStorage){
         try {
             dailyTickets.push(... JSON.parse(localStorage[date]));
         } catch (error) {
-            console.log("Good day! Here..Open your first Ticket")
+            console.log("Good day! Here..Open your first ticket")
         }
 
     } else {
@@ -687,7 +549,7 @@ function setScreenHeight(){
 
 
 
-function switchImgs(newImgTag){
+function switchMapImgs(newImgTag){
     let current= document.getElementById("buttons");
     if (newImgTag== ".") {
         newImgTag= ","
@@ -701,12 +563,7 @@ function switchImgs(newImgTag){
 }
 
 
-function setTicketDate(){
-    Ticket.date= ic_date.dateValue;
-}
-
-
-function mapDim(){
+function mapDim(){ //ADAPTS HTML MAP AREAS
     let numProp= [[12.5,12.5,11.25],[37.5,12.5,11.25],[62.5,12.5,11.25],[12.5,37.5,11.25],[37.5,37.5,11.25],[62.5,37.5,11.25],[12.5,62.5,11.25],[37.5,62.5,11.25],[62.5,62.5,11.25],[12.5,87.5,11.25],[37.5,87.5,11.25],[62.5,87.5,11.25]];
     let numbers= [...document.getElementsByClassName("numbers")];
     let dim= document.getElementById("buttons").offsetHeight/100

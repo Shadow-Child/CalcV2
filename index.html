@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link rel="manifest" href="manifest.json">
     <title>Yumurta Calculator Lite</title>
 
     <style>
@@ -37,9 +38,8 @@
 </head> 
 
 <body class="flex justify-center h-svh overflow-hidden select-none">
-    <div class="absolute bottom-1 right-1 text-xs text-gray-500">V.02/21/2024</div>
-
-    <div id="calculator" class="bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
+    <div id="calculator" class="relative bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
+        <div class="absolute bottom-1 right-1 text-xs text-gray-500">V.02/21/2024</div>
 
         <div id="screen" class="transition-[height] duration-200 ease-in-out">
             <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
@@ -71,31 +71,22 @@
 
 
 
-        <div id="keyboard" class="grid w-full relative bottom-0 aspect-[1.17/1] p-6" > <!--KEYBOARD START-->
-            <style>#keyboard.down{margin-bottom: -100%; transition: margin-bottom 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; transition: margin-bottom 0.2s ease-in-out;}</style>
-            <div id="utilities" class="row-span-1 flex justify-around h-[60%] grayscale"></div>
-            <img id="buttons" class="w-[100%]" src="Ressources/keyboard map/default.png" alt="keyboard" usemap="#keyss">
-            <map name="keyss">
-                <area shape="circle" alt="1" class="numbers">
-                <area shape="circle" alt="2" class="numbers">
-                <area shape="circle" alt="3" class="numbers">
-                <area shape="circle" alt="4" class="numbers">
-                <area shape="circle" alt="5" class="numbers">
-                <area shape="circle" alt="6" class="numbers">
-                <area shape="circle" alt="7" class="numbers">
-                <area shape="circle" alt="8" class="numbers">
-                <area shape="circle" alt="9" class="numbers">
-                <area shape="circle" alt="00" class="numbers">
-                <area shape="circle" alt="0" class="numbers">
-                <area shape="circle" alt="." class="numbers">
+        <div id="keyboard" class="flex flex-col w-full relative bottom-0 aspect-[1/1] p-4" > <!--KEYBOARD START-->
+            <style>#keyboard.down{margin-bottom: -95%; transition: margin-bottom 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; transition: margin-bottom 0.2s ease-in-out;}</style>
+            <!--<div id="utilities" class="justify-around grayscale h-[10%] w-full border"></div>-->
+            <div id="keys" class="aspect-square grid grid-rows-4 grid-cols-4">
+                <div id="numbers" class="row-start-1 row-span-4 col-start-1 col-span-3 h-full w-full grid grid-rows-subgrid grid-cols-subgrid ">
+                </div>
+                <div id="operators" class="row-start-1 row-span-4 grid grid-rows-subgrid">
+                    <div id="ic_remiseContainer" class="row-span-1 m-auto w-[95%]"></div>
+                    <div id="ic_nextContainer" class="row-span-2 m-auto w-[95%]"></div>
+                    <div id="ic_backspaceContainer" class="row-span-1 m-auto w-[95%]"></div>
+                </div>
+            </div>
 
-                <area shape="rect" alt="remise" class="operators" onclick="console.log('remise'); switchImgs(this.alt)" >
-                <area shape="rect" alt="next" class="operators" onclick="ic_nextBtn.OnclickEvent(); switchImgs(this.alt)">
-                <area shape="rect" alt="backspace" class="operators" onclick="ic_backspace.OnclickEvent(); switchImgs(this.alt)">
+            
 
 
-
-            </map>
         </div>
     </div>
     
@@ -173,7 +164,7 @@
                 <div class="logo w-[4rem] flex items-center">
                     <img src="Ressources/Imgs/Y-logo.png" >
                 </div>
-                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl m-auto">UMURTA STORE</div>
+                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl m-auto">YUMURTA STORE</div>
 
             </div>
             <div class="generalInfo mb-6 border-b-2 border-t-2 w-[85%] m-auto pb-4 pt-4 border-gray-400 border-dashed flex justify-around text-sm flex-wrap">
@@ -230,6 +221,11 @@
     
     <script src="js/main.js"></script>
     <script src="js/Elements.js"></script>
+    <script>
+        if('serviceWorker' in navigator) {
+          navigator.serviceWorker.register('/sw.js', { scope: '/' });
+        }
+        </script>
 
 </body>
 </html>
