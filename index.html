@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!--<link rel="stylesheet" href="Ressources/PrintScreen.css">-->
-    <!--<link rel="stylesheet" href="Ressources/styles.css">---> 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,36 +37,9 @@
 
 <body class="flex justify-center h-svh overflow-hidden select-none">
     <div id="calculator" class="relative bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
-        <div class="absolute bottom-1 right-1 text-xs text-gray-500">V.02/21/2024</div>
+        <div class="absolute bottom-1 left-1 text-xs text-gray-500">V0.1</div>
 
-        <div id="screen" class="transition-[height] duration-200 ease-in-out">
-            <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
-                <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
-                <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
-                <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
-            </div>
-
-            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick()">
-
-
-                    <div id="Articles" class="w-full overflow-x-hidden flex flex-col-reverse h-full"></div>
-
-
-            </div>
-        
-            <div id="total-box" class="z-10 bg-slate-100 flex flex-row w-full aspect-[5/1] rounded-b-2xl outline outline-1 font-bold">
-
-                <div id="ic_discardContainer" class="flex-[1_0_0%]"></div>
-                <div id="ic_totalContainer" class="flex-[3_0_0%]"></div>
-                <div id="ic_validateContainer" class="flex-[1_0_0%]"></div>
-
-            </div>
-
-
-
-        </div>
-
-
+        <div id="ic_screenContainer" class="h-fit"></div>
 
 
         <div id="keyboard" class="flex flex-col w-full relative bottom-0 aspect-[1/1] p-4" > <!--KEYBOARD START-->
@@ -221,11 +192,12 @@
     
     <script src="js/main.js"></script>
     <script src="js/Elements.js"></script>
+
     <script>
         if('serviceWorker' in navigator) {
           navigator.serviceWorker.register('/sw.js', { scope: '/' });
         }
-        </script>
+    </script>
 
 </body>
 </html>

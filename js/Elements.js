@@ -14,7 +14,7 @@ let ic_discard={
     },
 
     OnclickEvent: function(){
-       ic_Ticket.content.forEach(el => {
+       ic_Ticket.data.articles.forEach(el => {
         el.deleteArticle()
        })
     },
@@ -69,7 +69,7 @@ let ic_validate={
     OnclickEvent: function(){
         if(this.count> 0){
         ic_Ticket.setCloseTime();
-        let validContent= ic_Ticket.content.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
+        let validContent= ic_Ticket.data.articles.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
     
         let articlesData = validContent.map(el=> {
         //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
@@ -84,21 +84,22 @@ let ic_validate={
     
         dailyTickets.push({ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
             "content":          articlesData,
-            "timeOpen":         ic_Ticket.openTime,
-            "timeClose":        ic_Ticket.closeTime,
-            "totalTicket":      ic_Ticket.total,
-            "ticketId":         ic_Ticket.ticketId,
-            "count":            ic_Ticket.count,
-            "date":             ic_Ticket.date
+            "timeOpen":         ic_Ticket.data.openTime,
+            "timeClose":        ic_Ticket.data.closeTime,
+            "totalTicket":      ic_Ticket.data.total,
+            "ticketId":         ic_Ticket.data.ticketId,
+            "count":            ic_Ticket.data.count,
+            "date":             ic_Ticket.data.date
     })
     
-        ic_Ticket.content.forEach(el=>{el.deleteArticle()})
-        localStorage[`${ic_Ticket.date}`]= JSON.stringify(dailyTickets);
-        ic_Ticket.ticketId += 1;
+        ic_Ticket.data.articles.forEach(el=>{el.deleteArticle()})
+        localStorage[`${ic_Ticket.data.date}`]= JSON.stringify(dailyTickets);
+        ic_Ticket.data.ticketId += 1;
         ic_openTime.render(ic_openTime.container,ic_openTime.default)
-        ic_Ticket.closeTime= null;
-        ic_TicketNumber.render(ic_TicketNumber.container)
-        fillTicket()
+        ic_Ticket.data.closeTime= null;
+        ic_Ticket.setTicketId();
+        ic_TicketNumber.render(ic_TicketNumber.container);
+        fillTicket();
         goToPrintScreen();
     }},
 
@@ -107,11 +108,15 @@ let ic_validate={
 
         return `
             <div id="ic_validate" class="${state} relative flex h-full justify-center items-center" onclick="ic_validate.OnclickEvent();">
-                <div class="nbrIndicator absolute text-2xl w-full text-center bottom-[45%] z-10 text-white">${ic_validate.count}</div>
+                <div class="nbrIndicator absolute w-full top-2 text-center z-10 text-white">${this.count}</div>
                 <img class="w-[90%]" src="Ressources/Imgs/arrow.png">
             </div>
             
             <style>
+
+                .nbrIndicator{
+                    font-size: clamp(1rem, -0.675rem + 8.333333vw, 1.5rem);
+                }
 
                 #ic_validate.inactive{
                     filter: grayscale(1);
@@ -134,54 +139,46 @@ let ic_validate={
 let ic_total={
 
     container:    null,
-    state:        "initial",
-    screenState:  "SHRUNK",
-    total:        {numeric: 0, dinars: "0", millims: "000",},
+    state:{},
+    data:{
+        total: 0,
+    },
 
     setState: function(newState){
         this.state= newState;
         this.render(this.container);
     },
 
-    setSceenState: function(newState){
-        this.screenState= newState;
-    },
-
     setTotalValue: function(newValue){
-        this.total.numeric= newValue;
-        let strValue = (this.total.numeric).toFixed(3); //EXAMPLE: ic_Ticket.total= 23.5  / strValue= "23.500" ;
-        let splitted = strValue.split("."); //splitted= ["23","500"]
-        this.total.dinars= splitted[0];
-        this.total.millims= splitted[1];
+        this.data.total= newValue;
     },
 
     render: function(target){
         this.container= target;
-        this.container.innerHTML= this.ic_html();
+        let strValue = (this.data.total).toFixed(3); //EXAMPLE: ic_Ticket.data.total= 23.5  / strValue= "23.500" ;
+        let splitted = strValue.split("."); //splitted= ["23","500"]
+        let dinars= splitted[0];
+        let millims= splitted[1];
+        this.container.innerHTML= this.ic_html(dinars,millims);
     },
 
     OnclickEvent:function(){
-        if (this.screenState== "SHRUNK") {
-            extendScreen();
-        }else{
-            shrinkScreen();
-        }
+        ic_Ticket.changeView();
     },
 
-    ic_html: function(){
-        let total= this.total;
+    ic_html: function(dinars, millims){
         return `
                 <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full" onclick="ic_total.OnclickEvent()">
 
                     <div class="text-cyan-700 absolute left-2 top-1 text-md max-[270px]:hidden">TOTAL</div>
 
                     <div id="total-val " class="w-full flex flex-row justify-center h-[50%] items-end mb-2">
-                        <div id="dinars-total" class="text-4xl max-[320px]:text-2xl">${total.dinars}</div>
+                        <div id="dinars-total" class="text-4xl max-[320px]:text-2xl">${dinars}</div>
                         <div class="coma text-4xl max-[320px]:text-2xl">,</div>
 
                         <div class="relative">
                         <div class="leading-none max-[320px]:text-sm absolute bottom-6 max-[320px]:bottom-5">DT</div>
-                        <div id="millimes-total" class="text-2xl leading-none max-[320px]:text-xl">${total.millims}</div>
+                        <div id="millimes-total" class="text-2xl leading-none max-[320px]:text-xl">${millims}</div>
     
                         </div>
                         
@@ -208,11 +205,11 @@ let ic_nextBtn={
     ,
 
     OnclickEvent: function(){
-        let actualEdit= ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+        let actualEdit= ic_Ticket.data.articles.filter(el=> el.state== "FOCUSED")[0];
         let priceState= actualEdit?.price.state;
         let articleState= actualEdit?.quantity.state;
 
-        if(ic_Ticket.state== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
+        if(ic_Ticket.state.data== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
             
             ic_Ticket.setOpenTime()
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
@@ -223,7 +220,7 @@ let ic_nextBtn={
         }
 
         if(actualEdit== undefined ){
-            let notValid= ic_Ticket.content.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
+            let notValid= ic_Ticket.data.articles.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
             if (notValid.length != 0) { //IF THERE IS AN INVALID ARTICLE, ITS STATE WILL CHANGE TO "FOCUSED" IT IT WILL START EDITING
                 notValid[0].editPrice();
             } else{
@@ -252,7 +249,7 @@ let ic_nextBtn={
             ic_Ticket.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
-            let notValid= ic_Ticket.content.filter(el=> el.valid== "NO");
+            let notValid= ic_Ticket.data.articles.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
             //IF AN INVALID ARTICLE IS LEFT BEHIND, IT WILL BE FOCUSED NEXT
                 notValid[0].editPrice();
@@ -287,7 +284,7 @@ let ic_backspace={
     },
 
     OnclickEvent: function(){
-        let ActualEdit= ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+        let ActualEdit= ic_Ticket.data.articles.filter(el=> el.state== "FOCUSED")[0];
 
         if (ActualEdit.price.state == "FOCUSED") {
             ActualEdit.price.value = ActualEdit.price.value.slice(0, -1);
@@ -418,10 +415,10 @@ class newArticle{
         return`
     
     
-                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); ic_Ticket.content.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
+                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
                 <div id="Article-Info"  class="${this.state} flex flex-[7_0_0%] h-full items-center">
                     
-                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="ic_Ticket.content.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
+                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
                         <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
                         
                         <div class="coma text-3xl max-[320px]:text-2xl">,</div>
@@ -433,7 +430,7 @@ class newArticle{
                     </div>
                 
                 
-                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="ic_Ticket.content.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
+                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
     
                         <div class="multiply text-lg h-full flex items-end">x</div>
                         <div class="quantity text-4xl max-[320px]:text-2xl">22</div>
@@ -463,8 +460,8 @@ class newArticle{
 
     createArticleBox= function(){
 
-        if(ic_Ticket.state== "EMPTY"){
-            ic_Ticket.state= "NOT-EMPTY"
+        if(ic_Ticket.state.data== "EMPTY"){
+            ic_Ticket.state.data= "NOT-EMPTY"
         }
 
         let t= document.createElement("template");
@@ -504,13 +501,13 @@ class newArticle{
 
     deleteArticle= function(){
 
-        ic_Ticket.content= ic_Ticket.content.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
-        if(ic_Ticket.content.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
-            ic_Ticket.state= "EMPTY" 
+        ic_Ticket.data.articles= ic_Ticket.data.articles.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
+        if(ic_Ticket.data.articles.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
+            ic_Ticket.state.data= "EMPTY" 
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
         }
         else {
-            ic_Ticket.state= "NOT-EMPTY";
+            ic_Ticket.state.data= "NOT-EMPTY";
         }
     
         document.getElementById(`A-${this.id}`).classList.add("ml-[200%]");
@@ -526,7 +523,7 @@ class newArticle{
     }
     
     editPrice= function(){
-        let prev= ic_Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Ticket.data.articles.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"))
@@ -540,7 +537,7 @@ class newArticle{
     };
 
     editQuantity= function(){
-        let prev= ic_Ticket.content.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Ticket.data.articles.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
@@ -571,7 +568,7 @@ class newArticle{
 
     renderIndicator= function(){
 
-        this.indicator= ic_Ticket.content.indexOf(ic_Ticket.content.filter(el=> el.id== this.id)[0])+1
+        this.indicator= ic_Ticket.data.articles.indexOf(ic_Ticket.data.articles.filter(el=> el.id== this.id)[0])+1
         document.getElementById(`A-${this.id}`).children[1].children[2].innerHTML= this.indicator;
     };
 
@@ -581,46 +578,51 @@ class newArticle{
 let ic_Ticket={ //UNDER DEVELOPMENT
 
     container:  null,
-    state:      "EMPTY",
-    content:    [],
-    total:      null,
-    openTime:   null,
-    closeTime:  null,
-    date:       null,
-    count:      null,
-    ticketId:   null,
+    state:{
+        view:"SHRUNK",
+        data:"EMPTY"
+    },
+    data:{
+        articles:[],
+        total: null,
+        openTime:   null,
+        closeTime:  null,
+        date:       null,
+        count:      null,
+        ticketId:   null,
+    },
 
     addArticle: function(){
         
-        this.content.push(new newArticle(counter, document.getElementById("Articles")))
-        this.content.filter(el=> el.id== counter)[0].createArticleBox();
+        this.data.articles.push(new newArticle(counter, document.getElementById("Articles")))
+        this.data.articles.filter(el=> el.id== counter)[0].createArticleBox();
         counter+= 1;
 
     },
 
     setState: function(newState){
-        this.state= newState;
+        this.state.data= newState;
     },
 
     calcTicketTotal: function(){
-        this.total= this.content.filter(el=> el.valid== "YES").reduce((sum, currentVal)=> sum + currentVal.total, 0);
-        ic_total.setTotalValue(this.total)
+        this.data.total= this.data.articles.filter(el=> el.valid== "YES").reduce((sum, currentVal)=> sum + currentVal.total, 0);
+        ic_total.setTotalValue(this.data.total)
     },
 
     setOpenTime: function(){
         let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
         let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
-        this.openTime= currentDateTime.split(" ")[1]; // "12:32:16"
-        ic_openTime.setTimeValue(this.openTime); // For the moment until ic_Ticket component is created
+        this.data.openTime= currentDateTime.split(" ")[1]; // "12:32:16"
+        ic_openTime.setTimeValue(this.data.openTime); // For the moment until ic_Ticket component is created
     },
 
     setCloseTime: function(){
         let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
         let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
-        this.closeTime= currentDateTime.split(" ")[1]; //"12:32:16"
+        this.data.closeTime= currentDateTime.split(" ")[1]; //"12:32:16"
 
 
-        document.getElementById("closeTime").innerHTML= this.closeTime; //Temporary statement 
+        document.getElementById("closeTime").innerHTML= this.data.closeTime; //Temporary statement 
     },
 
     setTicketId: function(){
@@ -628,19 +630,19 @@ let ic_Ticket={ //UNDER DEVELOPMENT
         for (let i = 0; i < 7;i++) {
             if (localStorage[getEarlyDate(i)]) {
                 let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
-                this.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1 
+                this.data.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1
                 break
             }else{
-                this.ticketId=1
+                this.data.ticketId=1; 
             }
         }
-        ic_TicketNumber.setNumber(this.ticketId?.toFixed())
+        ic_TicketNumber.setNumber(this.data.ticketId.toFixed())
     },
 
     setTicketCount: function(){
 
-        this.count= (ic_Ticket.content.filter(e=> e.valid== "YES").length);
-        ic_validate.setCount(this.count);
+        this.data.count= (this.data.articles.filter(e=> e.valid== "YES").length);
+        ic_validate.setCount(this.data.count);
     },
 
     setTicketDate: function(){
@@ -649,25 +651,60 @@ let ic_Ticket={ //UNDER DEVELOPMENT
         var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!    // "02"
         var yyyy = String(today.getFullYear());// "2024"
     
-        this.date= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
-        ic_date.setDateValue(this.date) 
+        this.data.date= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
+        ic_date.setDateValue(this.data.date) 
     },
 
     refreshArticlesNumber: function(){
 
-        let validArticles= this.content.filter(el=> el.valid== "YES"); //FILTERS THE VALID ARTICLES
+        let validArticles= this.data.articles.filter(el=> el.valid== "YES"); //FILTERS THE VALID ARTICLES
         validArticles.forEach(el=>{
             el.renderIndicator()    
         })
     },
 
+    changeView: function(){
+        if (this.state.view== "SHRUNK") {
+            extendScreen();
+        }else{
+            shrinkScreen();
+        }
+    },
 
-    render: function(){
-
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
     },
 
     ic_html: function(){
-        return //HTML GOES HERE
+        return `
+        <div id="screen" class="transition-[height] duration-200 ease-in-out">
+            <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
+                <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
+                <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
+                <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
+            </div>
+
+            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick()">
+
+
+                    <div id="Articles" class="w-full overflow-x-hidden flex flex-col-reverse h-full"></div>
+
+
+            </div>
+        
+            <div id="total-box" class="z-10 bg-slate-100 flex flex-row w-full aspect-[5/1] rounded-b-2xl outline outline-1 font-bold">
+
+                <div id="ic_discardContainer" class="flex-[1_0_0%]"></div>
+                <div id="ic_totalContainer" class="flex-[3_0_0%]"></div>
+                <div id="ic_validateContainer" class="flex-[1_0_0%]"></div>
+
+            </div>
+
+
+
+        </div>
+        `
     }
 
 
@@ -729,24 +766,21 @@ class ic_numBtn {
 
     OnclickEvent= function(number){
 
-            if(ic_Ticket.state== "EMPTY"){ 
+            if(ic_Ticket.state.data== "EMPTY"){ 
                 //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
-                ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
-                ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
-                ic_Ticket.count+= 1;
-                
-                ic_openTime.setTimeValue();
+                ic_Ticket.addArticle()
+                ic_Ticket.setOpenTime()
                 ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
         
-                ic_Ticket.state= "NOT-EMPTY"
-            }else if(ic_Ticket.state== "NOT-EMPTY" && ic_Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
-                ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
-                ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
-                ic_Ticket.count+= 1; 
+                ic_Ticket.state.data= "NOT-EMPTY"
+            }else if(ic_Ticket.state.data== "NOT-EMPTY" && ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED").length==0){
+                ic_Ticket.data.articles.push(new newArticle(ic_Ticket.data.count+1, document.getElementById("Articles")))
+                ic_Ticket.data.articles.filter(el=> el.id== ic_Ticket.data.count+1)[0].createArticleBox();
+                ic_Ticket.data.count+= 1; 
             }
         
         
-            let ActualEdit= ic_Ticket.content.filter(el=> el.state=="FOCUSED")[0];
+            let ActualEdit= ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED")[0];
         
         
             if (ActualEdit.state == "FOCUSED" && ActualEdit.price.state == "FOCUSED") { 

@@ -30,15 +30,6 @@ let Utilitiesicons = {
     }
 };
 
-
-function setOnClick() { //SETS ONCLICK FUNCTION FOR EVERY NUMBER
-    let numbers = document.querySelectorAll('.numbers');
-    for (let i = 0; i < numbers.length; i++) {
-        numbers[i].setAttribute('onclick', `handleClick(this.alt); switchMapImgs(this.alt)`)
-    }
-    
-}
-
 function putUtilitiesIcons(icons) { //PUTS UTILITIES ICONS IN PLACE OVER THE KEYBOARD
     let container = document.getElementById('utilities');
     for (const icon in icons) {
@@ -53,6 +44,7 @@ function putUtilitiesIcons(icons) { //PUTS UTILITIES ICONS IN PLACE OVER THE KEY
 
 window.onload =  (event) => {
 
+    ic_Ticket.render(document.getElementById("ic_screenContainer"))
     setScreenHeight();
 
     this.addEventListener("resize", (event)=> {setScreenHeight();});
@@ -65,7 +57,6 @@ window.onload =  (event) => {
     ic_TicketNumber.render(document.getElementById("ic_NTicket"));
     ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default);
 
-    setOnClick();
     numbers.renderBtns();
     ic_nextBtn.render(document.getElementById("ic_nextContainer"));
     ic_backspace.render(document.getElementById("ic_backspaceContainer"))
@@ -106,17 +97,6 @@ window.onload =  (event) => {
 //##############################################################################
 
 dailyTickets=[]; //REPRESENTS THE VALID TICKETS FOR TODAY
-
-ic_Ticket={ //HOLDS THE CUREENT TICKET'S DATA
-    state:      "EMPTY",  //["EMPTY", "NOT-EMPTY"]
-    content:    [],
-    total:      0,
-    openTime:   null,
-    closeTime:  null,
-    date:       null,
-    count:      0,
-    ticketId:   1
-}
 
 counter= 1; 
 
@@ -173,7 +153,7 @@ function swipeDownDetect(el){ //DETECTS IF THE CALCULATOR'S IS SWIPED UP OR DOWN
         elapsedTime = new Date().getTime() - startTime // get time elapsed
         if (elapsedTime <= allowedTime){ // first condition for awipe met
             if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for horizontal swipe met
-                (distY > 0 && ic_total.screenState== "SHRUNK")? extendScreen():(distY < 0 && ic_total.screenState== "EXTENDED")? shrinkScreen():"invalid"; // if dist traveled is negative, it indicates left swipe
+                (distY > 0 && ic_Ticket.state.view== "SHRUNK")? extendScreen():(distY < 0 && ic_Ticket.state.view== "EXTENDED")? shrinkScreen():"invalid"; // if dist traveled is negative, it indicates left swipe
             }
         }
     })
@@ -185,16 +165,18 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
     let myKeyboard= document.getElementById("keyboard");
     let myScreen= document.getElementById("screen");
 
-    myKeyboard.classList.add("down");
-
-    ic_total.setSceenState("EXTENDED");
+    myScreen.classList.add("!h-[97vh]");
+    myKeyboard.classList.add("down","opacity-0");
+    ic_Ticket.state.view= "EXTENDED"
 }
 
 function shrinkScreen(){ //WILL SHRINK THE CALCULATOR'S SCREEN UP
     let myKeyboard= document.getElementById("keyboard"); 
+    let myScreen= document.getElementById("screen");
 
-    myKeyboard.classList.remove("down");
-    ic_total.setSceenState("SHRUNK");
+    myScreen.classList.remove("!h-[97vh]");
+    myKeyboard.classList.remove("down","opacity-0");
+    ic_Ticket.state.view= "SHRUNK"
 }
 
 
@@ -245,17 +227,18 @@ function swipeLeftDetect(el){
 function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDICATOR
 
     //COUNTS HOW MANY VALID ARTICLES IN THE CONTENT ARRAY
-    ic_Ticket.refreshArticlesNumber();
+
     ic_Ticket.setTicketCount()
 
-    if(ic_Ticket.count < 1){ 
+
+    if(ic_Ticket.data.count < 1){ 
         ic_discard.setState("inactive");
         ic_validate.setState("inactive");
     } else{ 
         ic_discard.setState("active");
         ic_validate.setState("active");
     }
-
+    ic_Ticket.refreshArticlesNumber();
 
 }
 
@@ -281,17 +264,15 @@ function refreshArticlesIndicator(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDI
 //##############################################################################
 
 function handleScreenClick(){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
-    let actualEdit=ic_Ticket.content.filter(el=> el.state== "FOCUSED")[0];
+    let actualEdit= ic_Ticket.data.articles.filter(el=> el.state== "FOCUSED")[0];
 
-    if(ic_Ticket.state== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
-        ic_Ticket.state= "NOT-EMPTY"
-
-        ic_openTime.setTimeValue()
-        ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
+    if(ic_Ticket.state.data== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
         
-        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
-        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
-        ic_Ticket.count+= 1;
+
+        ic_Ticket.setOpenTime()
+        ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)        
+        ic_Ticket.addArticle()
+        ic_Ticket.setState("NOT-EMPTY");
     }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
         actualEdit.stopEdit()
 
@@ -307,22 +288,22 @@ function handleClick(number) {  //HANDLES NUMBERS CLICKS AN ASSIGN THEIR VALUE T
 
     if(ic_Ticket.state== "EMPTY"){ 
         //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
-        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
-        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
-        ic_Ticket.count+= 1;
+        ic_Ticket.data.articles.push(new newArticle(ic_Ticket.data.count+1, document.getElementById("Articles")))
+        ic_Ticket.data.articles.filter(el=> el.id== ic_Ticket.data.count+1)[0].createArticleBox();
+        ic_Ticket.data.count+= 1;
         
         ic_openTime.setTimeValue();
         ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
 
         ic_Ticket.state= "NOT-EMPTY"
-    }else if(ic_Ticket.state== "NOT-EMPTY" && ic_Ticket.content.filter(el=> el.state=="FOCUSED").length==0){
-        ic_Ticket.content.push(new newArticle(ic_Ticket.count+1, document.getElementById("Articles")))
-        ic_Ticket.content.filter(el=> el.id== ic_Ticket.count+1)[0].createArticleBox();
-        ic_Ticket.count+= 1; 
+    }else if(ic_Ticket.state== "NOT-EMPTY" && ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED").length==0){
+        ic_Ticket.data.articles.push(new newArticle(ic_Ticket.data.count+1, document.getElementById("Articles")))
+        ic_Ticket.data.articles.filter(el=> el.id== ic_Ticket.data.count+1)[0].createArticleBox();
+        ic_Ticket.data.count+= 1; 
     }
 
 
-    let ActualEdit= ic_Ticket.content.filter(el=> el.state=="FOCUSED")[0];
+    let ActualEdit= ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED")[0];
 
 
     if (ActualEdit.state == "FOCUSED" && ActualEdit.price.state == "FOCUSED") { 

@@ -8,8 +8,8 @@
     "display": "standalone",
     "icons":[
         {
-            "src":"/Ressources/itcan.png",
-            "sizes": "512x512"
+            "src":"Ressources/Imgs/Y-logo.png",
+            "sizes": "531x515"
         }
     ]
 }
