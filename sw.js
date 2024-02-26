@@ -5,11 +5,11 @@ self.addEventListener('install', event => {
   console.log(event);
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    await cache.addAll([
+    /*await cache.addAll([
       '/',
       '/js/main.js',
       '/js/Elements.js',
-    ]);
+    ]);*/
   })());
 
 });
