@@ -773,14 +773,13 @@ class ic_numBtn {
                 ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
         
                 ic_Ticket.state.data= "NOT-EMPTY"
-            }else if(ic_Ticket.state.data== "NOT-EMPTY" && ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED").length==0){
-                ic_Ticket.data.articles.push(new newArticle(ic_Ticket.data.count+1, document.getElementById("Articles")))
-                ic_Ticket.data.articles.filter(el=> el.id== ic_Ticket.data.count+1)[0].createArticleBox();
-                ic_Ticket.data.count+= 1; 
+            }else if(ic_Ticket.state.data== "NOT-EMPTY" && ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED").length==0 && ic_Ticket.data.articles.filter(el=> el.valid== "NO").length==0){
+                ic_Ticket.addArticle()
             }
         
         
-            let ActualEdit= ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED")[0];
+            let ActualEdit= ic_Ticket.data.articles.filter(el=> el.valid== "NO").length!=0?ic_Ticket.data.articles.filter(el=> el.valid== "NO")[0]: ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED")[0];
+            ActualEdit.state!="FOCUSED"?ActualEdit.editPrice():'';
         
         
             if (ActualEdit.state == "FOCUSED" && ActualEdit.price.state == "FOCUSED") { 
