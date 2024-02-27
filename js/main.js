@@ -165,7 +165,7 @@ function extendScreen(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
     let myKeyboard= document.getElementById("keyboard");
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.add("!h-[97vh]");
+    myScreen.classList.add("!h-[97dvh]");
     myKeyboard.classList.add("down","opacity-0");
     ic_Ticket.state.view= "EXTENDED"
 }
@@ -174,7 +174,7 @@ function shrinkScreen(){ //WILL SHRINK THE CALCULATOR'S SCREEN UP
     let myKeyboard= document.getElementById("keyboard"); 
     let myScreen= document.getElementById("screen");
 
-    myScreen.classList.remove("!h-[97vh]");
+    myScreen.classList.remove("!h-[97dvh]");
     myKeyboard.classList.remove("down","opacity-0");
     ic_Ticket.state.view= "SHRUNK"
 }
