@@ -8,8 +8,8 @@
     "display": "standalone",
     "icons":[
         {
-            "src":"Ressources/Imgs/Y-logo.png",
-            "sizes": "250x250"
+            "src":"Ressources/Imgs/Y-logo-512x512.png",
+            "sizes": "512x512"
         }
     ]
 }
