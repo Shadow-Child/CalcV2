@@ -1,15 +1,10 @@
-const CACHE_NAME = `YUMURTA Calculator Lite`;
+const CACHE_NAME = `Yumurta  Calculator Lite`;
 
 // Use the install event to pre-cache all initial resources.
 self.addEventListener('install', event => {
-  console.log(event);
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_NAME);
-    /*await cache.addAll([
-      '/',
-      '/js/main.js',
-      '/js/Elements.js',
-    ]);*/
+
   })());
 
 });
@@ -32,6 +27,7 @@ self.addEventListener('fetch', event => {
           return fetchResponse;
         } catch (e) {
           // The network failed.
+          console.log('Network Error: '+ e)
         }
     }
   })());

@@ -14,7 +14,7 @@ let ic_discard={
     },
 
     OnclickEvent: function(){
-       ic_Ticket.data.articles.forEach(el => {
+       ic_Display.data.articles.forEach(el => {
         el.deleteArticle()
        })
     },
@@ -45,97 +45,6 @@ let ic_discard={
 }
 
 
-let ic_validate={
-
-    container: null,
-    state: "inactive",
-    count:0,
-
-    setState: function(newState){
-        this.state= newState;
-        this.render(this.container);
-    },
-
-    setCount: function(newValue){
-        this.count= newValue;
-        this.render(this.container);
-    },
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html();
-    },
-
-    OnclickEvent: function(){
-        if(this.count> 0){
-        ic_Ticket.setCloseTime();
-        let validContent= ic_Ticket.data.articles.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
-    
-        let articlesData = validContent.map(el=> {
-        //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
-            return {
-                "total"     :   el.total,
-                "price"     :   el.price.numeric,
-                "quantity"  :   el.quantity.numeric,
-                
-            }
-    
-        })
-    
-        dailyTickets.push({ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
-            "content":          articlesData,
-            "timeOpen":         ic_Ticket.data.openTime,
-            "timeClose":        ic_Ticket.data.closeTime,
-            "totalTicket":      ic_Ticket.data.total,
-            "ticketId":         ic_Ticket.data.ticketId,
-            "count":            ic_Ticket.data.count,
-            "date":             ic_Ticket.data.date
-    })
-    
-        ic_Ticket.data.articles.forEach(el=>{el.deleteArticle()})
-        localStorage[`${ic_Ticket.data.date}`]= JSON.stringify(dailyTickets);
-        ic_Ticket.data.ticketId += 1;
-        ic_openTime.render(ic_openTime.container,ic_openTime.default)
-        ic_Ticket.data.closeTime= null;
-        ic_Ticket.setTicketId();
-        ic_TicketNumber.render(ic_TicketNumber.container);
-        fillTicket();
-        goToPrintScreen();
-    }},
-
-    ic_html: function(){
-        let state= this.state;
-
-        return `
-            <div id="ic_validate" class="${state} relative flex h-full justify-center items-center" onclick="ic_validate.OnclickEvent();">
-                <div class="nbrIndicator absolute w-full top-2 text-center z-10 text-white">${this.count}</div>
-                <img class="w-[90%]" src="Ressources/Imgs/arrow.png">
-            </div>
-            
-            <style>
-
-                .nbrIndicator{
-                    font-size: clamp(1rem, -0.675rem + 8.333333vw, 1.5rem);
-                }
-
-                #ic_validate.inactive{
-                    filter: grayscale(1);
-                    opacity: 50%;
-                    transition: all 0.5s ease-in-out
-                }
-
-                #ic_validate.active{
-                    filter: grayscale(0);
-                    opacity: 100%;
-                    transition: all 0.5s ease-in-out
-                }
-
-            </style>
-        `
-    }
-}
-
-
 let ic_total={
 
     container:    null,
@@ -149,36 +58,76 @@ let ic_total={
         this.render(this.container);
     },
 
+    swipeDownDetect:function(){
+
+    var touchsurface = this.container,
+    startX,
+    startY,
+    distX,
+    distY,
+    threshold = 150, //required min distance traveled to be considered swipe
+    restraint = 100, // maximum distance allowed at the same time in perpendicular direction
+    allowedTime = 500, // maximum time allowed to travel that distance
+    elapsedTime,
+    startTime
+
+    touchsurface.addEventListener('touchstart', function(e){
+        var touchobj = e.changedTouches[0]
+        startX = touchobj.pageX
+        startY = touchobj.pageY
+        startTime = new Date().getTime() // record time when finger first makes contact with surface
+
+    })
+
+    touchsurface.addEventListener('touchmove', function(e){
+        /*var touchobj = e.changedTouches[0]
+        let distY = touchobj.pageY - startY*/
+    })
+
+    touchsurface.addEventListener('touchend', function(e){
+        var touchobj = e.changedTouches[0]
+        distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
+        distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
+        elapsedTime = new Date().getTime() - startTime // get time elapsed
+        if (elapsedTime <= allowedTime){ // first condition for awipe met
+            if (Math.abs(distY) >= threshold && Math.abs(distX) <= restraint){ // 2nd condition for horizontal swipe met
+                ic_Display.changeView(); // if dist traveled is negative, it indicates left swipe
+            }
+        }
+    })
+    },
+
     setTotalValue: function(newValue){
         this.data.total= newValue;
     },
 
     render: function(target){
         this.container= target;
-        let strValue = (this.data.total).toFixed(3); //EXAMPLE: ic_Ticket.data.total= 23.5  / strValue= "23.500" ;
+        let strValue = (this.data.total).toFixed(3); //EXAMPLE: ic_Display.data.total= 23.5  / strValue= "23.500" ;
         let splitted = strValue.split("."); //splitted= ["23","500"]
         let dinars= splitted[0];
         let millims= splitted[1];
         this.container.innerHTML= this.ic_html(dinars,millims);
+        this.swipeDownDetect()
     },
 
     OnclickEvent:function(){
-        ic_Ticket.changeView();
+        ic_Display.changeView();
     },
 
     ic_html: function(dinars, millims){
         return `
                 <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full" onclick="ic_total.OnclickEvent()">
 
-                    <div class="text-cyan-700 absolute left-2 top-1 text-md max-[270px]:hidden">TOTAL</div>
+                    <div class="text-cyan-700 absolute left-2 top-1 text1">TOTAL</div>
 
                     <div id="total-val " class="w-full flex flex-row justify-center h-[50%] items-end mb-2">
-                        <div id="dinars-total" class="text-4xl max-[320px]:text-2xl">${dinars}</div>
-                        <div class="coma text-4xl max-[320px]:text-2xl">,</div>
+                        <div id="dinars-total" class="text2 leading-none">${dinars}</div>
+                        <div class="coma text3 leading-none">,</div>
 
                         <div class="relative">
-                        <div class="leading-none max-[320px]:text-sm absolute bottom-6 max-[320px]:bottom-5">DT</div>
-                        <div id="millimes-total" class="text-2xl leading-none max-[320px]:text-xl">${millims}</div>
+                        <div class="leading-none text1">DT</div>
+                        <div id="millimes-total" class="text3 leading-none">${millims}</div>
     
                         </div>
                         
@@ -194,6 +143,7 @@ let ic_total={
 
 }
 
+
 let ic_nextBtn={
 
     container: null,
@@ -205,29 +155,26 @@ let ic_nextBtn={
     ,
 
     OnclickEvent: function(){
-        let actualEdit= ic_Ticket.data.articles.filter(el=> el.state== "FOCUSED")[0];
+        let actualEdit= ic_Display.data.articles.filter(el=> el.state== "FOCUSED")[0];
         let priceState= actualEdit?.price.state;
         let articleState= actualEdit?.quantity.state;
 
-        if(ic_Ticket.state.data== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
+        if(ic_Display.state.data== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
             
-            ic_Ticket.setOpenTime()
-            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)
-            
-            ic_Ticket.addArticle();
-
-            ic_Ticket.setState("NOT-EMPTY");
+            ic_Display.setOpenTime()
+            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue) 
+            ic_Display.addArticle();
+            ic_Display.setState("NOT-EMPTY");
         }
 
         if(actualEdit== undefined ){
-            let notValid= ic_Ticket.data.articles.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
+            let notValid= ic_Display.data.articles.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
             if (notValid.length != 0) { //IF THERE IS AN INVALID ARTICLE, ITS STATE WILL CHANGE TO "FOCUSED" IT IT WILL START EDITING
                 notValid[0].editPrice();
             } else{
 
-                ic_Ticket.addArticle();
-
-                ic_Ticket.setState("NOT-EMPTY");
+                ic_Display.addArticle();
+                ic_Display.setState("NOT-EMPTY");
             }
         }
 
@@ -236,7 +183,7 @@ let ic_nextBtn={
             actualEdit.editQuantity();
             actualEdit.calcTotal();
 
-            ic_Ticket.calcTicketTotal();    
+            ic_Display.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
             
@@ -246,25 +193,25 @@ let ic_nextBtn={
             actualEdit.valid= "YES";
             actualEdit.stopEdit();
             actualEdit.calcTotal();
-            ic_Ticket.calcTicketTotal();    
+            ic_Display.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
 
-            let notValid= ic_Ticket.data.articles.filter(el=> el.valid== "NO");
+            let notValid= ic_Display.data.articles.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
             //IF AN INVALID ARTICLE IS LEFT BEHIND, IT WILL BE FOCUSED NEXT
                 notValid[0].editPrice();
             } else{
             //IF THERE IS NO INVALID ARTICLES A NEW ARTICLE BOX WILL BE ADDED
-            ic_Ticket.addArticle();
+            ic_Display.addArticle();
             }
     
         }
         else if(actualEdit.state== "FOCUSED" && articleState== "BLUR" && priceState== "BLUR" && actualEdit.valid== "YES"){
             actualEdit.stopEdit();
-            ic_Ticket.addArticle();
+            ic_Display.addArticle();
         }
     
-        refreshArticlesIndicator();
+        ic_Display.refreshArticlesIndicator();
     },
 
     ic_html: function(){
@@ -284,7 +231,7 @@ let ic_backspace={
     },
 
     OnclickEvent: function(){
-        let ActualEdit= ic_Ticket.data.articles.filter(el=> el.state== "FOCUSED")[0];
+        let ActualEdit= ic_Display.data.articles.filter(el=> el.state== "FOCUSED")[0];
 
         if (ActualEdit.price.state == "FOCUSED") {
             ActualEdit.price.value = ActualEdit.price.value.slice(0, -1);
@@ -326,11 +273,12 @@ ic_date={
     ic_html: function(){
 
         return `
-            <div> ${this.dateValue}</div>
+            <div>${this.dateValue}</div>
         `
     }
 
 }
+
 
 ic_openTime={
     container: null,
@@ -352,6 +300,7 @@ ic_openTime={
         `
     }
 }
+
 
 ic_TicketNumber={
     container: null,
@@ -406,7 +355,7 @@ class newArticle{
 
     ic_boxHtml= function(){
         return `
-        <div id="A-${this.id}" class="Article flex min-h-[3rem] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
+        <div id="A-${this.id}" class="Article flex aspect-[8/1] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
         </div>
         `
     }  
@@ -415,25 +364,25 @@ class newArticle{
         return`
     
     
-                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text-2xl bg-gray-100" onclick="event.stopPropagation(); ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
+                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text4 bg-gray-100" onclick="event.stopPropagation(); ic_Display.data.articles.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
                 <div id="Article-Info"  class="${this.state} flex flex-[7_0_0%] h-full items-center">
                     
-                    <div id="price-box" class="${this.price.state} flex flex-[3_0_0%] justify-end h-[80%] items-end min-[360px]:items-end" onclick="ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
-                        <div class="dinars-box text-4xl max-[320px]:text-2xl" >0</div>
+                    <div id="price-box" class="${this.price.state} flex w-[50%] justify-end h-fit items-end" onclick="ic_Display.data.articles.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
+                        <div class="dinars-box text2 leading-none">0</div>
                         
-                        <div class="coma text-3xl max-[320px]:text-2xl">,</div>
+                        <div class="coma text3 leading-none">,</div>
                             <div class="flex flex-col relative">
-                                <div class="currency leading-none max-[320px]:text-sm absolute bottom-6 max-[360px]:hidden">DT</div>
-                                <div class="millimes-box text-2xl leading-none max-[320px]:text-xl">000</div>
+                                <div class="currency leading-none text1">DT</div>
+                                <div class="millimes-box text3 leading-none">000</div>
                             </div>
     
                     </div>
                 
                 
-                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-[80%] items-end justify-evenly min-[360px]:items-center" onclick="ic_Ticket.data.articles.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
+                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-full items-end justify-evenly  " onclick="ic_Display.data.articles.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
     
                         <div class="multiply text-lg h-full flex items-end">x</div>
-                        <div class="quantity text-4xl max-[320px]:text-2xl">22</div>
+                        <div class="quantity text2 leading-none">22</div>
                         
                     </div>
                     <div class="number flex-[1_7_0%] h-full flex justify-center items-center border-dashed border-l border-black text-gray-500 text-xl">&#9664</div>
@@ -460,14 +409,15 @@ class newArticle{
 
     createArticleBox= function(){
 
-        if(ic_Ticket.state.data== "EMPTY"){
-            ic_Ticket.state.data= "NOT-EMPTY"
+        if(ic_Display.state.data== "EMPTY"){
+            ic_Display.state.data= "NOT-EMPTY"
         }
 
         let t= document.createElement("template");
         t.innerHTML= this.ic_boxHtml();
         this.container.insertBefore(t.content, this.container.children[0]);
         this.render();
+        this.swipeLeftDetect()
     };
 
     render=function(){
@@ -481,14 +431,24 @@ class newArticle{
         let activeDinars= article.children[1].children[0].children[0];
         let activeMillim = article.children[1].children[0].children[2].children[1];
         let value=  this.price.value;
-        if(!value.includes('.')){ //IF THE VALUE OF PRICE CONTAINS A "." ALREADY IT TURNS IT INTO A FLOAT
-            value= makeFloat(value);
-        }
         this.price.numeric= parseFloat(value)
 
         let splitted = value.split(".");                        //EXAMPLE:    VALUE= "6,5"  / SPLITTED= ["6","5"]
         activeDinars.innerHTML= splitted[0].padStart(1, 0);     // "6"
-        activeMillim.innerHTML= splitted[1].padEnd(3,0);        // "500"
+        activeMillim.innerHTML= splitted[1]?splitted[1].padEnd(3,0):"000";        // "500"
+
+        if(activeDinars.innerHTML.length>3){
+            activeDinars.classList.remove("text2")
+            activeDinars.classList.add("text3")
+            activeMillim.classList.remove("text3")
+            activeMillim.classList.add("text4")
+        }
+        else{
+            activeDinars.classList.remove("text3")
+            activeDinars.classList.add("text2")   
+            activeMillim.classList.remove("text4")
+            activeMillim.classList.add("text3")
+        }
     };
 
     renderQuantity= function(){
@@ -501,29 +461,65 @@ class newArticle{
 
     deleteArticle= function(){
 
-        ic_Ticket.data.articles= ic_Ticket.data.articles.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
-        if(ic_Ticket.data.articles.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
-            ic_Ticket.state.data= "EMPTY" 
+        ic_Display.data.articles= ic_Display.data.articles.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
+        if(ic_Display.data.articles.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
+            ic_Display.state.data= "EMPTY" 
             ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
-        }
-        else {
-            ic_Ticket.state.data= "NOT-EMPTY";
         }
     
         document.getElementById(`A-${this.id}`).classList.add("ml-[200%]");
 
         setTimeout(()=>this.container.removeChild(document.getElementById(`A-${this.id}`)), 300)
 
-        ic_Ticket.calcTicketTotal();
-        refreshArticlesIndicator()
+        ic_Display.calcTicketTotal();
+        ic_Display.refreshArticlesIndicator()
         ic_discard.render(document.getElementById("ic_discardContainer"));
         ic_validate.render(document.getElementById("ic_validateContainer"));
         ic_total.render(document.getElementById("ic_totalContainer"));
     
+    };
+
+    swipeLeftDetect= function(){
+        let el= document.getElementById(`A-${this.id}`)
+        var touchsurface = el,
+        startX,
+        startY,
+        distX,
+        distY,
+        threshold = 150, //required min distance traveled to be considered swipe
+        restraint = 100, // maximum distance allowed at the same time in perpendicular direction
+        allowedTime = 500, // maximum time allowed to travel that distance
+        elapsedTime,
+        startTime
+    
+        touchsurface.addEventListener('touchstart', function(e){
+            var touchobj = e.changedTouches[0]
+            startX = touchobj.pageX  // record coordinates where finger first makes contact with surface
+            startY = touchobj.pageY
+            startTime = new Date().getTime() // record time when finger first makes contact with surface
+    
+        })
+    
+        touchsurface.addEventListener('touchmove', function(e){
+        })
+    
+        touchsurface.addEventListener('touchend', function(e){
+            var touchobj = e.changedTouches[0]
+            distX = touchobj.pageX - startX // get horizontal dist traveled by finger while in contact with surface
+            distY = touchobj.pageY - startY // get vertical dist traveled by finger while in contact with surface
+            elapsedTime = new Date().getTime() - startTime  // get time elapsed
+            if (elapsedTime <= allowedTime){ // first condition for awipe met
+                if (Math.abs(distX) >= threshold && Math.abs(distY) <= restraint){ // 2nd condition for horizontal swipe met
+                    if (distX > 0){
+                        ic_Display.data.articles.filter(el=> el.id== this.id.split("-")[1])[0].deleteArticle();
+                    }
+                }
+            }
+        })
     }
     
     editPrice= function(){
-        let prev= ic_Ticket.data.articles.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Display.data.articles.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"))
@@ -537,7 +533,7 @@ class newArticle{
     };
 
     editQuantity= function(){
-        let prev= ic_Ticket.data.articles.filter(e=> e.state== "FOCUSED")[0]
+        let prev= ic_Display.data.articles.filter(e=> e.state== "FOCUSED")[0]
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
@@ -554,28 +550,41 @@ class newArticle{
         this.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
 
-        this.state="BLUR"
+        this.state="BLUR";
         this.price.state= "BLUR";
+        this.price.mode= "REPLACE"
         this.quantity.state= "BLUR";
+        this.quantity.mode= "REPLACE"
         
         this.render()
+        this.renderIndicator();
     }
 
     calcTotal= function(){
         this.total= this.price.numeric * this.quantity.numeric
     }
 
-
     renderIndicator= function(){
 
-        this.indicator= ic_Ticket.data.articles.indexOf(ic_Ticket.data.articles.filter(el=> el.id== this.id)[0])+1
+        this.indicator= ic_Display.data.articles.indexOf(ic_Display.data.articles.filter(el=> el.id== this.id)[0])+1;
         document.getElementById(`A-${this.id}`).children[1].children[2].innerHTML= this.indicator;
     };
+
+    setValue= function(path, number) { //SETS THE VALUE OF QUANTITY OR PRICE DEPENDING ON STATE AND MODE
+        if (path.mode == "REPLACE") {
+            path.value = number;
+            path.mode = "APPEND";
+    
+        } else if (path.mode == "APPEND"){
+            path.value += number;
+        }
+    }
 
 
 }
 
-let ic_Ticket={ //UNDER DEVELOPMENT
+
+let ic_Display={
 
     container:  null,
     state:{
@@ -613,16 +622,13 @@ let ic_Ticket={ //UNDER DEVELOPMENT
         let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
         let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
         this.data.openTime= currentDateTime.split(" ")[1]; // "12:32:16"
-        ic_openTime.setTimeValue(this.data.openTime); // For the moment until ic_Ticket component is created
+        ic_openTime.setTimeValue(this.data.openTime); // For the moment until ic_Display component is created
     },
 
     setCloseTime: function(){
         let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
         let currentDateTime = now.toLocaleString(); // "06/02/2024 12:32:16"
         this.data.closeTime= currentDateTime.split(" ")[1]; //"12:32:16"
-
-
-        document.getElementById("closeTime").innerHTML= this.data.closeTime; //Temporary statement 
     },
 
     setTicketId: function(){
@@ -665,9 +671,11 @@ let ic_Ticket={ //UNDER DEVELOPMENT
 
     changeView: function(){
         if (this.state.view== "SHRUNK") {
-            extendScreen();
+            this.extendDisplay();
+            this.state.view= "EXTENDED"
         }else{
-            shrinkScreen();
+            this.shrinkDisplay();
+            this.state.view= "SHRUNK"
         }
     },
 
@@ -676,16 +684,73 @@ let ic_Ticket={ //UNDER DEVELOPMENT
         this.container.innerHTML= this.ic_html();
     },
 
+    extendDisplay: function(){ //WILL EXTEND THE CALCULATOR'S SCREEN DOWN
+        let myKeyboard= document.getElementById("keyboard");
+        let myScreen= document.getElementById("screen");
+    
+        myScreen.classList.add("!h-[97dvh]");
+        myKeyboard.classList.add("down");
+    },
+
+
+    shrinkDisplay: function(){ //WILL SHRINK THE CALCULATOR'S SCREEN UP
+        let myKeyboard= document.getElementById("keyboard"); 
+        let myScreen= document.getElementById("screen");
+    
+        myScreen.classList.remove("!h-[97dvh]");
+        myKeyboard.classList.remove("down","opacity-0");
+    },
+
+
+    refreshArticlesIndicator: function(){ //UPDATES THE VALUE OF ARTICLES NUMBER INDICATOR
+
+        //COUNTS HOW MANY VALID ARTICLES IN THE CONTENT ARRAY
+    
+        this.setTicketCount()
+    
+    
+        if(this.data.count < 1){ 
+            ic_discard.setState("inactive");
+            ic_validate.setState("inactive");
+        } else{ 
+            ic_discard.setState("active");
+            ic_validate.setState("active");
+        }
+        this.refreshArticlesNumber();
+    
+    },
+
+
+    handleDisplayClick: function(){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
+        let actualEdit= this.data.articles.filter(el=> el.state== "FOCUSED")[0];
+    
+        if(this.state.data== "EMPTY"){ //IF THE SCREEN IS CLICKED WHILE "EMPTY", A NEW ELEMENT IS ADDED
+            
+    
+            this.setOpenTime()
+            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)        
+            this.addArticle()
+            this.setState("NOT-EMPTY");
+        }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
+            actualEdit?.stopEdit()
+    
+            this.calcTicketTotal();
+            ic_total.render(document.getElementById("ic_totalContainer"));
+        }
+    
+    },
+
+
     ic_html: function(){
         return `
         <div id="screen" class="transition-[height] duration-200 ease-in-out">
-            <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text-sm">
+            <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text1">
                 <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
                 <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
                 <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
             </div>
 
-            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="handleScreenClick()">
+            <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="ic_Display.handleDisplayClick()">
 
 
                     <div id="Articles" class="w-full overflow-x-hidden flex flex-col-reverse h-full"></div>
@@ -752,7 +817,6 @@ let numbers={
 }
 
 
-
 class ic_numBtn {
 
     constructor({alt, path}){
@@ -766,19 +830,19 @@ class ic_numBtn {
 
     OnclickEvent= function(number){
 
-            if(ic_Ticket.state.data== "EMPTY"){ 
+            if(ic_Display.state.data== "EMPTY"){ 
                 //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
-                ic_Ticket.addArticle()
-                ic_Ticket.setOpenTime()
+                ic_Display.addArticle()
+                ic_Display.setOpenTime()
                 ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
         
-                ic_Ticket.state.data= "NOT-EMPTY"
-            }else if(ic_Ticket.state.data== "NOT-EMPTY" && ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED").length==0 && ic_Ticket.data.articles.filter(el=> el.valid== "NO").length==0){
-                ic_Ticket.addArticle()
+                ic_Display.state.data= "NOT-EMPTY"
+            }else if(ic_Display.state.data== "NOT-EMPTY" && ic_Display.data.articles.filter(el=> el.state=="FOCUSED").length==0 && ic_Display.data.articles.filter(el=> el.valid== "NO").length==0){
+                ic_Display.addArticle()
             }
         
         
-            let ActualEdit= ic_Ticket.data.articles.filter(el=> el.valid== "NO").length!=0?ic_Ticket.data.articles.filter(el=> el.valid== "NO")[0]: ic_Ticket.data.articles.filter(el=> el.state=="FOCUSED")[0];
+            let ActualEdit=ic_Display.data.articles.filter(el=> el.state=="FOCUSED").length!=0? ic_Display.data.articles.filter(el=> el.state=="FOCUSED")[0]:ic_Display.data.articles.filter(el=> el.valid== "NO")[0];
             ActualEdit.state!="FOCUSED"?ActualEdit.editPrice():'';
         
         
@@ -787,31 +851,36 @@ class ic_numBtn {
         
                 if (ActualEdit.price.mode == "REPLACE") {
                     ActualEdit.price.mode == "APPEND";
-                    setValue(ActualEdit.price, number);
+                    ActualEdit.setValue(ActualEdit.price, number);
                     ActualEdit.renderPrice();
                 } 
                 else if(number == "."){
                 //PREVENTS ADDING ANOTHER "." TO THE PRICE VALUE IF IT ALREADY HAVE ONE OR IF PRICE DOES ALREDY HAVE 2 NUMBERS
-                    if(ActualEdit.price.value.includes(".") == true  ||  ActualEdit.price.value.length > 3 ){
+                    if(!ActualEdit.price.value.includes(".")){
+                        ActualEdit.setValue(ActualEdit.price, number); 
                         ActualEdit.renderPrice();
-        
                     } 
-                    else {
-                        setValue(ActualEdit.price, number); 
+                }
+
+                else if(ActualEdit.price.value.includes(".") && (ActualEdit.price.value + number).length <= 9){
+                    if(ActualEdit.price.value.split(".")[1].length<3){
+                        ActualEdit.setValue(ActualEdit.price, number); 
                         ActualEdit.renderPrice();
                     }
+                }else{
+                    if ((ActualEdit.price.value + number).length <= 5) {
+                        //THIS TEST PREVENTS ADDING ANOTHER NUMBER TO PRICE VALUE IF IT ALREADY ATTEMPTED ITS MAXIMUM SIZE
+                            ActualEdit.setValue(ActualEdit.price, number);
+                            ActualEdit.renderPrice();
+                        }
+                        else if (ActualEdit.price.value.length == 4 && number.length == 2) {
+                        // THIS CONDITION IS TRUE IF THE USER PRESS "00" WHILE THERE IS ONLY A PLACE FOR ONE NUMBER
+                            ActualEdit.setValue(ActualEdit.price, number[0]);
+                            ActualEdit.renderPrice();
+                            }
                 }
                       
-                else if (ActualEdit.price.value.length < 5 && (ActualEdit.price.value + number).length <= 5) {
-                //THIS TEST PREVENTS ADDING ANOTHER NUMBER TO PRICE VALUE IF IT ALREADY ATTEMPTED ITS MAXIMUM SIZE
-                    setValue(ActualEdit.price, number);
-                    ActualEdit.renderPrice();
-                }
-                else if (ActualEdit.price.value.length < 5 && number.length == 2) {
-                // THIS CONDITION IS TRUE IF THE USER PRESS "00" WHILE THERE IS ONLY A PLACE FOR ONE NUMBER
-                    setValue(ActualEdit.price, number[0]);
-                    ActualEdit.renderPrice();
-                    }
+
             }
         
         
@@ -820,11 +889,11 @@ class ic_numBtn {
             //IF AN ARTICLE IS FOCUSED AND ITS QUANTITY TEXT IS FOCUSED AND QUANTITY VALUE LENGTH IS LESS THAN 2 AND THE NUMBER PRESSED IS NOT "." (DEFENETLY WE CANT BUY HALF AN ARTICLE)
             
                 if (ActualEdit.quantity.mode == "REPLACE") {
-                    ActualEdit.quantity.value = number;
+                    ActualEdit.setValue(ActualEdit.quantity, number);
                     ActualEdit.quantity.mode = "APPEND";
                     ActualEdit.renderQuantity();
                 } else {
-                    setValue(ActualEdit.quantity, number);
+                    ActualEdit.setValue(ActualEdit.quantity, number);
                     ActualEdit.renderQuantity();
                 }
         
@@ -852,11 +921,383 @@ class ic_numBtn {
 }
 
 
+let ic_history={
+
+    container: null,
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html();
+    },
 
 
+    OnclickEvent: function(){
+        ic_Printable.setContent(dailyTickets)
+        ic_Printable.render(document.getElementById("ic_ticketContainer"))
+
+        ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
+        goToPrintScreen();
+    },
 
 
-/*operators:[
-    {alt:"remise", path: "Ressources/keyboard keys/1.png"},
-    {alt:"next", path: "Ressources/keyboard keys/2.png"},
-    {alt:"backspace", path: "Ressources/keyboard keys/3.png"},]*/
+    ic_html:function(){
+        return `
+        <div onclick="ic_history.OnclickEvent()">
+            <img id="history" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/History.png">
+        </div>
+        `
+    }
+}
+
+
+class ic_Ticket{ //fausse
+
+    constructor(dataJSON){
+        this.container= null;
+        this.data= dataJSON;
+
+
+    this.renderLines=function(){
+
+        let t= document.createElement("template");
+        this.data.content.forEach(el=>{
+            t.innerHTML+= this.renderLine(el);
+        })
+        return t.innerHTML
+    };
+
+    this.render=function(target){
+        this.container= target;
+        this.container.innerHTML+=(this.ic_html())
+    };
+
+    this.renderLine=function(Article){
+        let price=Article.price.toFixed(3);
+        let total=Article.total.toFixed(3);
+        
+    }
+
+    this.ic_html=function(){
+        
+    }    };
+}
+
+
+let ic_validate={
+
+    container: null,
+    state: "inactive",
+    count:0,
+
+    setState: function(newState){
+        this.state= newState;
+        this.render(this.container);
+    },
+
+    setCount: function(newValue){
+        this.count= newValue;
+        this.render(this.container);
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnclickEvent: function(){
+        if(this.count> 0){
+        ic_Display.setCloseTime();
+        let validContent= ic_Display.data.articles.filter(el=> el.valid== "YES"); //RETURNS VALID ARTICLES ONLY
+    
+        let articlesData = validContent.map(el=> {
+        //RETURNS THE NECESSARY DATA FROM EACH ARTICLE
+            return {
+                "total"     :   el.total,
+                "price"     :   el.price.numeric,
+                "quantity"  :   el.quantity.numeric,
+            }
+    
+        })
+    
+        dailyTickets.push({ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
+            "content":          articlesData,
+            "timeOpen":         ic_Display.data.openTime,
+            "timeClose":        ic_Display.data.closeTime,
+            "totalTicket":      ic_Display.data.total,
+            "ticketId":         ic_Display.data.ticketId,
+            "count":            ic_Display.data.count,
+            "date":             ic_Display.data.date
+    })
+    
+        ic_Display.data.articles.forEach(el=>{el.deleteArticle()})
+        localStorage[`${ic_Display.data.date}`]= JSON.stringify(dailyTickets);
+        ic_Display.data.ticketId += 1;
+        ic_openTime.render(ic_openTime.container,ic_openTime.default)
+        ic_Display.data.closeTime= null;
+        ic_Display.setTicketId();
+        ic_TicketNumber.render(ic_TicketNumber.container);
+        //fillTicket();
+        ic_Printable.setContent([dailyTickets[dailyTickets.length-1]])
+        ic_Printable.render(document.getElementById("ic_ticketContainer"));
+        goToPrintScreen();
+    }},
+
+    ic_html: function(){
+        let state= this.state;
+
+        return `
+            <div id="ic_validate" class="${state} relative flex h-full justify-center items-center" onclick="ic_validate.OnclickEvent();">
+                <div class="nbrIndicator absolute w-full top-[10%] text-center z-10 text-white">${this.count}</div>
+                <img class="w-[90%] absolute top-2" src="Ressources/Imgs/arrow.png">
+            </div>
+            
+            <style>
+
+                .nbrIndicator{
+                    font-size: clamp(1rem, -0.575rem + 9.333333vw, 1.5rem);
+                }
+
+                #ic_validate.inactive{
+                    filter: grayscale(1);
+                    opacity: 50%;
+                    transition: all 0.5s ease-in-out
+                }
+
+                #ic_validate.active{
+                    filter: grayscale(0);
+                    opacity: 100%;
+                    transition: all 0.5s ease-in-out
+                }
+
+            </style>
+        `
+    }
+}
+
+
+let ic_Printable={
+    container: null,
+    state:{},
+    data: {
+        storeName: "YUMURTA STORE",
+        logo: "Ressources/Imgs/Y-logo-512x512.png",
+        qrCode: "Ressources/Imgs/qrCode.png",
+        message: "Merci pour votre visite",
+        ticketContent:[],
+        total: null,
+    },
+    
+    setContent:function(content){   
+        this.data.ticketContent= content;
+        this.setTotal();
+    },
+
+    setTotal:function(){
+        this.data.total= this.data.ticketContent.reduce(
+            (a, b)=> a + b["totalTicket"],0
+        )
+    },
+
+    renderTotal: function(){
+
+    },
+    
+    render:function(target){
+        this.container= target;
+        let t= document.createElement("template")
+        t.innerHTML= this.ic_htmlTemplate();
+        t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
+        this.container.appendChild(t.content)
+    },
+    
+
+    renderContent:function(){
+        let list= document.createElement("div");
+
+        this.data.ticketContent.forEach(ticket=>{
+            let temp= document.createElement("template");
+            temp.innerHTML+= this.createHolder(ticket);
+            let lineContainer= temp.content.getElementById("lines");
+            lineContainer.appendChild(this.createLines(ticket.content))
+            list.appendChild(temp.content)
+        })
+            return list.innerHTML
+
+    },
+
+    createHolder: function(ticket){
+
+        return this.ic_holderHtml(ticket.ticketId, ticket.count, ticket.totalTicket, ticket.date, ticket.timeClose)
+    },
+
+
+    createLines: function(lines){
+        let t= document.createElement("div")
+        lines.forEach(line=>{
+            let tl= document.createElement("template")
+            tl.innerHTML= this.ic_lineHtml(line.price, line.quantity, line.total);
+            t.appendChild(tl.content)
+        })
+        return t
+
+
+    },
+    
+
+    ic_holderHtml: function(tId,count,total,date,time){
+        return`
+        <div class="ticket overflow-auto">
+                
+                <div class="generalInfo mb-4 border-b-2 border-t-2 w-[85%] m-auto pb-2 pt-2 border-gray-400 border-dashed flex justify-between text-sm flex-wrap">
+                    <div>   
+                        <div id="ticketId">Ticket N°: #${tId.toFixed().padStart(5,0)}</div>
+                        <div>${date}</div>
+                    </div>
+                    <div>
+                        <div id="length">${count} Article(s)</div>
+                        <div>${time}</div>
+                    </div>
+                </div>
+                <div class="goods text-right mb-4">
+    
+                    <div class="titles flex w-full justify-around ">
+    
+                        <div class="w-[4.6rem] text-centr">Prix</div>                    
+                        <div>Qté</div>
+                        <div class="w-[4.6rem]">Total</div>
+                        
+                    </div>
+                    <div class="data justify-center mt-3 mb-3 relative z-10">
+                        <div id="lines">
+                        </div>
+
+                    </div>
+                    <div class="totalTicket flex justify-between w-[85%] m-auto mt-3 mb-3 border-t-2 border-dashed border-gray-400">
+                        <div class="font-bold">Total:</div>
+                        <div id="TotalVal" class="font-bold">${total.toFixed(3)}</div>
+                    </div>
+                    
+                </div>    
+
+            </div>
+        `
+    },
+
+
+    ic_lineHtml: function(price,quantity,total){
+        return`
+        <div class="ligne aspect-[14/1] w-full flex justify-evenly">
+            <div id="Price" class="w-[4.6rem]">${price.toFixed(3)}</div> 
+            <div class="border border-black"></div>
+            <div id="Qte" class="w-[1.25rem]">${quantity}</div>
+            <div class="border border-black"></div>
+            <div id="Tot.u" class="w-[4.6rem] text-right">${total.toFixed(3)}</div>
+        </div>
+        `
+    },
+
+
+    ic_htmlTemplate: function(){
+        return`
+            <div class="ticketHead flex p-4">
+                <div class="logo w-[4rem] flex items-center">
+                    <img src="${this.data.logo}">
+                </div>
+                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl m-auto">${this.data.storeName}</div>
+        
+            </div>
+        
+            <div id="ic_contentContainer"></div>
+                <div id="ticketFoot" class="">
+                    <div id="allTotal" class="w-full font-extrabold w-[85%] m-auto border border-black h-[3rem] leading-[3rem] flex justify-around text4">
+                        <div>Total payer: </div>
+                        <div>${this.data.total.toFixed(3)} DT</div>
+                    </div>
+                    <div class="flex w-[90%] justify-between m-auto mt-4 mb-4">
+                    <div id="qrCode" class="m-auto w-[20%]">
+                        <img src="${this.data.qrCode}" >
+                    </div>
+            
+                <div id="msg" class="text-center w-[70%] h-fit m-auto">${this.data.message}</div>
+                
+            </div>
+        </div>
+        `
+    },
+    
+    
+}
+
+
+ic_dateFilter={
+    container: null,
+    state:{},
+    data:{
+        options: null,
+        value: null,
+    },
+
+    render:function(target){
+        this.container = target;
+
+        let t= document.createElement("template")
+        t.innerHTML= this.ic_html();
+        t.content.querySelectorAll("#ic_dateFilter")[0].innerHTML= this.createOptions();
+        this.container.appendChild(t.content.querySelector("#ic_dateFilter"));
+    },
+
+    getOptions: function(){
+        this.data.options= Object.keys(localStorage);
+    },
+
+    createOptions:function(){
+        let t= document.createElement("div")
+        this.data.options.forEach(o=>{
+            t.innerHTML+= `<option value="${o}">${o}</option>`
+        })
+        return t.innerHTML
+    },
+
+    OnchangeEvent: function(){
+        this.data.value= this.container.children[0].value 
+        ic_Printable.setContent([...JSON.parse(localStorage[this.data.value])])
+        document.getElementById("ic_ticketContainer").innerHTML=``
+
+        ic_Printable.render(ic_Printable.container)
+        ic_Printable.renderContent()
+    },
+
+    ic_html: function(){
+        return`
+        <select id="ic_dateFilter" onchange="ic_dateFilter.OnchangeEvent()">
+
+        </select>
+        `
+    }
+
+}
+
+
+let ic_settings={ //Under Dev
+
+    container: null,
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html();
+    },
+
+
+    OnclickEvent: function(){
+
+    },
+
+
+    ic_html:function(){
+        return `
+        <div onclick="ic_settings.OnclickEvent()">
+            <img id="settings" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/settings.png">
+        </div>
+        `
+    }
+}
