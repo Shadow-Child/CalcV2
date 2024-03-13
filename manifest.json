@@ -2,7 +2,7 @@
     "name":"YUMURTA Calculator Lite",
     "short_name":"Y-CALC",
     "description":"A simple calculator designed for vendors and shop owners to create simple tickets and print them",
-    "start_url":"/",
+    "start_url":"/CalcV2",
     "background_color": "#d1d5db",
     "orientation": "portrait",
     "display": "standalone",
