@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Azeret+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-    <link rel="manifest" href="/CalcV2/manifest.json">
+    <link rel="manifest" href="/manifest.json">
     <title>Yumurta Calculator Lite</title>
 
     <style>
@@ -32,6 +32,10 @@
           background: #555; 
         }
 
+        input[type=number]::-webkit-inner-spin-button {
+          opacity: 1
+        }
+
         .text1{
             font-size: clamp(0.5rem, -0.325rem + 6.333333vw, 1rem); 
         }
@@ -47,22 +51,28 @@
         .text4{
             font-size: clamp(0.8rem, -0.325rem + 6.333333vw, 1.5rem);   
         }
+
+        .text5{
+          font-size: clamp(1.5rem, 1rem + 4.333333vw, 2.75rem);   
+        }
         </style>
 
 </head> 
 
 <body class="flex justify-center h-dvh overflow-hidden select-none touch-manipulation">
     <div id="calculator" class="relative bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-svh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
-        <div class="absolute bottom-1 left-1 text-xs text-gray-500">V.06/03/2024</div>
+        <div class="absolute bottom-1 left-1 text-xs text-gray-500">V.13/03/2024</div>
 
         <div id="ic_screenContainer" class="h-fit"></div>
+        <div id="totalZoomContainer" class="absolute w-full h-full z-[100] hidden"></div>
 
+        <!--div id="ic_keyboardContainer"></div-->
+        
         <div id="keyboard" class="flex flex-col w-full relative bottom-0 !aspect-[1/1.15] p-4" > <!--KEYBOARD START-->
             <style>#keyboard.down{margin-bottom: -95%; opacity: 0%; transition: margin-bottom opacity 0.2s ease-in-out;} #keyboard{margin-bottom: 0%; opacity: 100%; transition: opacity margin-bottom 0.2s ease-in-out;}</style>
             <div id="utilities" class="justify-around h-[10%] grayscale w-full grid grid-cols-5 grid-rows-1"></div>
             <div id="keys" class="aspect-square grid grid-rows-4 grid-cols-4">
-                <div id="numbers" class="row-start-1 row-span-4 col-start-1 col-span-3 h-full w-full grid grid-rows-subgrid grid-cols-subgrid ">
-                </div>
+                <div id="numbers" class="row-start-1 row-span-4 col-start-1 col-span-3 h-full w-full grid grid-rows-subgrid grid-cols-subgrid "></div>
                 <div id="operators" class="row-start-1 row-span-4 grid grid-rows-subgrid">
                     <div id="ic_remiseContainer" class="row-span-1 m-auto w-[95%]"></div>
                     <div id="ic_nextContainer" class="row-span-2 m-auto w-[95%]"></div>
@@ -78,23 +88,82 @@
     
 
 
-    <div id="printScreen" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-hidden">
-        <div id="printNavBar" class="flex justify-between border-b-2 border-dashed border-black w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
-            <div class="goBack" onclick="returnToCalc()"> &#8592; Retour </div>
-            <div id="ic_dateFilterContainer"></div>
-            <div class="print" onclick="printTicket();">Print &#8594;</div>
-        </div>
+    <div id="print" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-hidden">
+        <div id="printNav"></div>
         <div id="ic_ticketContainer" class="overflow-auto"></div>
+    </div>
+
+
+
+    <div id="settings" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] overflow-hidden hidden">
+        <div id="settingsNav"></div>
+        <div id="settBody" class="m-6 overflow-auto">
+          <div>
+              <div id="profilePic"></div>
+              <div id="nameHolder" class="m-auto mt-4 mb-2"></div>
+          </div>
+
+
+          <div id="ticketSett"></div>
+
+          <div id="settLanguage" ></div>
+        </div>
+
+        <!--div id="ic_settingsContainer" class="overflow-auto">
+            <div class="text4 pl-4 border-b">Ticket</div>
+        </div>
+        <div id="popUpContainer" class="w-full flex justify-center absolute top-[20%]">
+            <div class="border border-gray-500 rounded-[5%] h-fit w-[80%] absolute bg-gray-50">
+                <form action="" class="w-full p-4 flex flex-col">
+                    <label for="storename" class="text1">Nom de store:</label>
+                    <input id="storename" type="text" placeholder="YUMURTA Store" class="border border-black rounded w-full h-[1.5rem] pl-2 text-sm">
+                    <label for="message" class="text1">Message:</label>
+                    <input id="message" type="text" placeholder="Merci Pour Votr Visite" class="border border-black rounded w-full h-[1.5rem] pl-2 text-sm">
+                    
+                    <label for="logo" class="flex items-center justify-evenly mt-4 mb-4">
+                        <div class="w-[40%]">logo:</div>
+                        <div id="qrPreview" class="w-[20%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400">+</div>
+                    </label>
+                    <input type="file" title=" " id="logo" class="block hidden w-full m-auto text-sm text-black
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-gray-700
+                    hover:file:bg-violet-100
+                  "/>
+
+
+                    <label for="qr" class="flex items-center justify-evenly mt-4 mb-4">
+                        <div class="w-[40%]">qr code:</div>
+                        <div id="logoPreview" class="w-[20%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400">+</div>
+                    </label>
+
+                    <input type="file" title=" " id="qr" class="block hidden w-full m-auto text-sm text-black
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-full file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-violet-50 file:text-gray-700
+                    hover:file:bg-violet-100
+                  "/>
+
+                  <button class="bg-sky-400 hover:bg-sky-700 p-2 rounded-full w-fit m-auto text-white">
+                    Save changes
+                  </button>
+
+                </form>
+            </div>
+        </div-->
+        
     </div>
 
     
     <script src="js/main.js"></script>
     <script src="js/Elements.js"></script>
 
-    <script>
+    <!--script>
 
                if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.register('sw.js', { scope: '' }).then(function(registration) {
+          navigator.serviceWorker.register('sw.js', { scope: '/CalcV2' }).then(function(registration) {
           console.log('ServiceWorker registration successful with scope: ', registration.scope);
         }).catch(function(err) {
           //registration failed :(
@@ -103,7 +172,7 @@
       }else {
         console.log('No service-worker on this browser');
       }
-    </script>
+    </script-->
 
 </body>
 </html>

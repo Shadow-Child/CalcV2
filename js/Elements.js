@@ -81,7 +81,8 @@ let ic_total={
 
     touchsurface.addEventListener('touchmove', function(e){
         /*var touchobj = e.changedTouches[0]
-        let distY = touchobj.pageY - startY*/
+        let distY = touchobj.pageY - startY
+        console.log(distY)*/
     })
 
     touchsurface.addEventListener('touchend', function(e){
@@ -112,16 +113,18 @@ let ic_total={
     },
 
     OnclickEvent:function(){
-        ic_Display.changeView();
+        ic_totalZoom.setValue(this.data.total)
+        ic_totalZoom.render(document.getElementById("totalZoomContainer"))
     },
+
 
     ic_html: function(dinars, millims){
         return `
-                <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full" onclick="ic_total.OnclickEvent()">
+                <div id="total" class="border-l-2 border-r-2 border-gray-800 flex justify-center items-end relative h-full">
 
                     <div class="text-cyan-700 absolute left-2 top-1 text1">TOTAL</div>
 
-                    <div id="total-val " class="w-full flex flex-row justify-center h-[50%] items-end mb-2">
+                    <div id="total-val " class="w-full flex flex-row justify-center h-[50%] items-end mb-2" onclick="ic_total.OnclickEvent()">
                         <div id="dinars-total" class="text2 leading-none">${dinars}</div>
                         <div class="coma text3 leading-none">,</div>
 
@@ -134,13 +137,47 @@ let ic_total={
 
                     </div>
 
-                    <div id="extend-container" class="flex justify-center bottom absolute bottom-[-17px]" onclick="ic_total.OnclickEvent()">
+                    <div id="extend-container" class="flex justify-center bottom absolute bottom-[-17px]" onclick="ic_Display.changeView();">
                         <img src="Ressources/Imgs/extend.svg" id="extend">
                     </div>
 
                 </div>`
     }
 
+}
+
+
+let ic_totalZoom={
+    container: null,
+    state:{},
+    data:{
+        value: null,
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+        this.container.classList.remove("hidden")
+    },
+
+    setValue: function(newValue){
+        this.data.value= newValue;
+    },
+
+    OnclickEvent: function(){
+        this.container.classList.add("hidden")
+    },
+
+    ic_html: function(){
+        return`
+        <div id="totalZoom" class="border border-black flex justify-center h-full items-center bg-gray-700/80" onclick="ic_totalZoom.OnclickEvent()">
+            <div class="w-[80%] border h-[20%] flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
+                <div class="text4">TOTAL</div>
+                <div class="text5 font-extrabold">${(this.data.value).toFixed(3)} DT</div>
+            </div>
+        </div>
+        `
+    }
 }
 
 
@@ -162,7 +199,7 @@ let ic_nextBtn={
         if(ic_Display.state.data== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
             
             ic_Display.setOpenTime()
-            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue) 
+            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
             ic_Display.addArticle();
             ic_Display.setState("NOT-EMPTY");
         }
@@ -256,13 +293,12 @@ let ic_backspace={
 }
 
 
-ic_date={
-
+ic_CalculatorInfoBar={
     container: null,
-    dateValue: null,
-    
-    setDateValue: function(newValue){
-      this.dateValue=   newValue;
+    data:{
+        date: null,
+        openTime: "-:-:-",
+        ticketId: null,
     },
 
     render: function(target){
@@ -270,58 +306,29 @@ ic_date={
         this.container.innerHTML= this.ic_html();
     },
 
-    ic_html: function(){
-
-        return `
-            <div>${this.dateValue}</div>
-        `
-    }
-
-}
-
-
-ic_openTime={
-    container: null,
-    timeValue: null,
-    default: "-:-:-",
+    setDateValue: function(newValue){
+        this.data.date=   newValue;
+    },
 
     setTimeValue: function(newValue){
-        this.timeValue= newValue;
+            this.data.openTime= newValue;
     },
 
-    render: function(target, value){
-        this.container= target;
-        this.container.innerHTML= this.ic_html(value);
-    },
-
-    ic_html:function(value){
-        return `
-            <div>${value}</div>
-        `
-    }
-}
-
-
-ic_TicketNumber={
-    container: null,
-    number: null,
-
-    setNumber: function(newValue){
-        this.number= newValue;
-    },
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html();
+    setTicketId: function(newValue){
+        this.data.ticketId= newValue;
     },
 
     ic_html: function(){
-        return `
-            <div>#${(this.number)?.padStart(6,0)}</div>
+        return`
+        <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text1">
+            <div id="ic_dateContainer" class="flex-[2_0_0%]">${this.data.date}</div>
+            <div id="ic_timeContainer" class="flex-[1_0_0%]">${this.data.openTime}</div>
+            <div id="ic_NTicket" class="flex-[2_0_0%]">#${this.data.ticketId.padStart(7,0)}</div>
+        </div>
         `
     }
-    
 }
+
 
 
 class newArticle{
@@ -463,8 +470,9 @@ class newArticle{
 
         ic_Display.data.articles= ic_Display.data.articles.filter((Article) =>!(Article.id == this.id)); //SEARCHS FOR THE ARTICLES JSON BY ITS ID
         if(ic_Display.data.articles.length==0){ //IF THERE IS NO ARTICLES THE TICKET'S STATE WILL BE EMPTY
-            ic_Display.state.data= "EMPTY" 
-            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.default)
+            ic_Display.state.data= "EMPTY"
+            ic_CalculatorInfoBar.setTimeValue("-:-:-")
+            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         }
     
         document.getElementById(`A-${this.id}`).classList.add("ml-[200%]");
@@ -473,8 +481,6 @@ class newArticle{
 
         ic_Display.calcTicketTotal();
         ic_Display.refreshArticlesIndicator()
-        ic_discard.render(document.getElementById("ic_discardContainer"));
-        ic_validate.render(document.getElementById("ic_validateContainer"));
         ic_total.render(document.getElementById("ic_totalContainer"));
     
     };
@@ -602,7 +608,6 @@ let ic_Display={
     },
 
     addArticle: function(){
-        
         this.data.articles.push(new newArticle(counter, document.getElementById("Articles")))
         this.data.articles.filter(el=> el.id== counter)[0].createArticleBox();
         counter+= 1;
@@ -622,7 +627,7 @@ let ic_Display={
         let now= new Date() //EXAMPLE: now= Tue Feb 06 2024 12:31:22 GMT+0100 (heure normale d’Europe centrale)
         let currentDateTime= now.toLocaleString(); // "06/02/2024 12:32:16"
         this.data.openTime= currentDateTime.split(" ")[1]; // "12:32:16"
-        ic_openTime.setTimeValue(this.data.openTime); // For the moment until ic_Display component is created
+        ic_CalculatorInfoBar.setTimeValue(this.data.openTime); // For the moment until ic_Display component is created
     },
 
     setCloseTime: function(){
@@ -632,17 +637,17 @@ let ic_Display={
     },
 
     setTicketId: function(){
-
-        for (let i = 0; i < 7;i++) {
-            if (localStorage[getEarlyDate(i)]) {
-                let prevdailyTickets= JSON.parse(localStorage[getEarlyDate(i)]);
+        this.data.ticketId= AppConfig.Ticket.ticketId
+        /*for (let i = 0; i < 7;i++) {
+            if (AppData[getEarlyDate(i)]) {
+                let prevdailyTickets= AppData[getEarlyDate(i)];
                 this.data.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1
                 break
             }else{
                 this.data.ticketId=1; 
             }
-        }
-        ic_TicketNumber.setNumber(this.data.ticketId.toFixed())
+        }*/
+        ic_CalculatorInfoBar.setTicketId(this.data.ticketId.toFixed())
     },
 
     setTicketCount: function(){
@@ -658,7 +663,7 @@ let ic_Display={
         var yyyy = String(today.getFullYear());// "2024"
     
         this.data.date= mm + '/' + dd + '/' + yyyy; // "02/06/2024"
-        ic_date.setDateValue(this.data.date) 
+        ic_CalculatorInfoBar.setDateValue(this.data.date) 
     },
 
     refreshArticlesNumber: function(){
@@ -728,7 +733,7 @@ let ic_Display={
             
     
             this.setOpenTime()
-            ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue)        
+            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
             this.addArticle()
             this.setState("NOT-EMPTY");
         }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
@@ -744,11 +749,7 @@ let ic_Display={
     ic_html: function(){
         return `
         <div id="screen" class="transition-[height] duration-200 ease-in-out">
-            <div class="info-bar flex items-center text-center aspect-[10/1] bg-slate-300 border-b border-gray-700 text1">
-                <div id="ic_dateContainer" class="flex-[2_0_0%]"></div>
-                <div id="ic_timeContainer" class="flex-[1_0_0%]"></div>
-                <div id="ic_NTicket" class="flex-[2_0_0%]"></div>
-            </div>
+            <div id="infoBarContainer"></div>
 
             <div class="data-box bg-white flex-1 overflow-y-auto flex flex-col" onclick="ic_Display.handleDisplayClick()">
 
@@ -834,7 +835,7 @@ class ic_numBtn {
                 //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
                 ic_Display.addArticle()
                 ic_Display.setOpenTime()
-                ic_openTime.render(document.getElementById("ic_timeContainer"), ic_openTime.timeValue);
+            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         
                 ic_Display.state.data= "NOT-EMPTY"
             }else if(ic_Display.state.data== "NOT-EMPTY" && ic_Display.data.articles.filter(el=> el.state=="FOCUSED").length==0 && ic_Display.data.articles.filter(el=> el.valid== "NO").length==0){
@@ -921,7 +922,7 @@ class ic_numBtn {
 }
 
 
-let ic_history={
+let ic_historyIco={
 
     container: null,
 
@@ -932,9 +933,10 @@ let ic_history={
 
 
     OnclickEvent: function(){
-        ic_Printable.setContent(dailyTickets)
-        ic_Printable.render(document.getElementById("ic_ticketContainer"))
-
+        ic_historyNav.render(document.getElementById("printNav"))
+        ic_historyPrint.setContent(dailyTickets)
+        ic_historyPrint.render(document.getElementById("ic_ticketContainer"))
+        ic_dateFilter.getOptions()
         ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
         goToPrintScreen();
     },
@@ -942,44 +944,11 @@ let ic_history={
 
     ic_html:function(){
         return `
-        <div onclick="ic_history.OnclickEvent()">
-            <img id="history" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/History.png">
+        <div onclick="ic_historyIco.OnclickEvent()">
+            <img id="historyIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/History.png">
         </div>
         `
     }
-}
-
-
-class ic_Ticket{ //fausse
-
-    constructor(dataJSON){
-        this.container= null;
-        this.data= dataJSON;
-
-
-    this.renderLines=function(){
-
-        let t= document.createElement("template");
-        this.data.content.forEach(el=>{
-            t.innerHTML+= this.renderLine(el);
-        })
-        return t.innerHTML
-    };
-
-    this.render=function(target){
-        this.container= target;
-        this.container.innerHTML+=(this.ic_html())
-    };
-
-    this.renderLine=function(Article){
-        let price=Article.price.toFixed(3);
-        let total=Article.total.toFixed(3);
-        
-    }
-
-    this.ic_html=function(){
-        
-    }    };
 }
 
 
@@ -993,6 +962,7 @@ let ic_validate={
         this.state= newState;
         this.render(this.container);
     },
+
 
     setCount: function(newValue){
         this.count= newValue;
@@ -1030,13 +1000,16 @@ let ic_validate={
     })
     
         ic_Display.data.articles.forEach(el=>{el.deleteArticle()})
-        localStorage[`${ic_Display.data.date}`]= JSON.stringify(dailyTickets);
-        ic_Display.data.ticketId += 1;
-        ic_openTime.render(ic_openTime.container,ic_openTime.default)
+        AppData[`${ic_Display.data.date}`]= dailyTickets;
+        localStorage.setItem("AppData", JSON.stringify(AppData))
+        AppConfig.Ticket.ticketId+=1;
+        updateConfig();
+        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         ic_Display.data.closeTime= null;
         ic_Display.setTicketId();
-        ic_TicketNumber.render(ic_TicketNumber.container);
+        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         //fillTicket();
+        ic_printNav.render(document.getElementById("printNav"))
         ic_Printable.setContent([dailyTickets[dailyTickets.length-1]])
         ic_Printable.render(document.getElementById("ic_ticketContainer"));
         goToPrintScreen();
@@ -1079,10 +1052,10 @@ let ic_Printable={
     container: null,
     state:{},
     data: {
-        storeName: "YUMURTA STORE",
-        logo: "Ressources/Imgs/Y-logo-512x512.png",
-        qrCode: "Ressources/Imgs/qrCode.png",
-        message: "Merci pour votre visite",
+        storeName: null,
+        logo: null,
+        qrCode: null,
+        message: null,
         ticketContent:[],
         total: null,
     },
@@ -1090,6 +1063,13 @@ let ic_Printable={
     setContent:function(content){   
         this.data.ticketContent= content;
         this.setTotal();
+    },
+
+    setData: function(){
+        this.data.storeName= AppConfig.Ticket.storeName;
+        this.data.logo= AppConfig.Ticket.logo;
+        this.data.qrCode= AppConfig.Ticket.qrCode;
+        this.data.message= AppConfig.Ticket.message;
     },
 
     setTotal:function(){
@@ -1199,21 +1179,22 @@ let ic_Printable={
 
     ic_htmlTemplate: function(){
         return`
-            <div class="ticketHead flex p-4">
-                <div class="logo w-[4rem] flex items-center">
-                    <img src="${this.data.logo}">
-                </div>
-                <div class="storeName font-black text-3xl text-center max-[320px]:text-2xl m-auto">${this.data.storeName}</div>
-        
+            <div class="ticketHead p-4">
+            <div class="flex w-[85%] m-auto gap-[5%]">
+            <div class="logo w-[6rem] flex items-center">
+                <img src="${this.data.logo}">
+            </div>
+            <div class="storeName font-black text2 text-center m-auto">${this.data.storeName}</div>
+        </div>
             </div>
         
             <div id="ic_contentContainer"></div>
                 <div id="ticketFoot" class="">
                     <div id="allTotal" class="w-full font-extrabold w-[85%] m-auto border border-black h-[3rem] leading-[3rem] flex justify-around text4">
-                        <div>Total payer: </div>
+                        <div>Total payé: </div>
                         <div>${this.data.total.toFixed(3)} DT</div>
                     </div>
-                    <div class="flex w-[90%] justify-between m-auto mt-4 mb-4">
+                    <div class="flex w-[85%] justify-between m-auto mt-4 mb-4">
                     <div id="qrCode" class="m-auto w-[20%]">
                         <img src="${this.data.qrCode}" >
                     </div>
@@ -1229,7 +1210,7 @@ let ic_Printable={
 }
 
 
-ic_dateFilter={
+let ic_dateFilter={
     container: null,
     state:{},
     data:{
@@ -1242,12 +1223,12 @@ ic_dateFilter={
 
         let t= document.createElement("template")
         t.innerHTML= this.ic_html();
-        t.content.querySelectorAll("#ic_dateFilter")[0].innerHTML= this.createOptions();
+        t.content.querySelectorAll("#ic_dateFilter")[0].innerHTML+= this.createOptions();
         this.container.appendChild(t.content.querySelector("#ic_dateFilter"));
     },
 
     getOptions: function(){
-        this.data.options= Object.keys(localStorage);
+        this.data.options= Object.keys(AppData);
     },
 
     createOptions:function(){
@@ -1260,17 +1241,18 @@ ic_dateFilter={
 
     OnchangeEvent: function(){
         this.data.value= this.container.children[0].value 
-        ic_Printable.setContent([...JSON.parse(localStorage[this.data.value])])
+        ic_historyPrint.setContent(AppData[this.data.value])
         document.getElementById("ic_ticketContainer").innerHTML=``
-
-        ic_Printable.render(ic_Printable.container)
-        ic_Printable.renderContent()
+        ic_historyNav.render(document.getElementById("printNav"))
+        ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
+        ic_historyPrint.render(ic_historyPrint.container)
+        ic_historyPrint.renderContent()
     },
 
     ic_html: function(){
         return`
-        <select id="ic_dateFilter" onchange="ic_dateFilter.OnchangeEvent()">
-
+        <select id="ic_dateFilter" onchange="ic_dateFilter.OnchangeEvent()" class="w-full">
+            <option value="" disabled selected>Select...date</option>
         </select>
         `
     }
@@ -1278,7 +1260,7 @@ ic_dateFilter={
 }
 
 
-let ic_settings={ //Under Dev
+let ic_settingsIco={ 
 
     container: null,
 
@@ -1289,15 +1271,606 @@ let ic_settings={ //Under Dev
 
 
     OnclickEvent: function(){
+        let calcScreen= document.getElementById("calculator")
+        let settingScreen= document.getElementById("settings")
+        calcScreen.classList.add("hidden");
+        settingScreen.classList.remove("hidden");
+
+        ic_userName.setUserName(AppConfig.user.userName);
+        ic_userPic.setImgUrl(AppConfig.user.userPic);
+
+        ic_userPic.render(document.getElementById("profilePic"))
+        ic_userName.render(document.getElementById("nameHolder"))
+
+        ic_languageSett.getValues();
+        ic_TicketSett.render(document.getElementById("ticketSett"))
+        ic_languageSett.render(document.getElementById("settLanguage"))
 
     },
 
 
     ic_html:function(){
         return `
-        <div onclick="ic_settings.OnclickEvent()">
-            <img id="settings" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/settings.png">
+        <div onclick="ic_settingsIco.OnclickEvent()">
+            <img id="settingsIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/settings.png">
         </div>
+        `
+    }
+}
+
+
+let ic_settingsNav={
+    container: null,
+    data:{
+        returnText: "retour",
+    },
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()
+        
+    },
+
+    return: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+        setScreenHeight()
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_settingsNav.return()">
+                &#8592; ${this.data.returnText} 
+            </div>
+        </div>
+
+        `
+    }
+}
+
+
+
+let ic_printNav={
+
+    container: null,
+    data:{
+        returnText: "Retour",
+        printText: "Imprimer"
+    },
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()  
+    },
+
+    OnReturnClick: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+
+        this.container.parentElement.innerHTML=`
+            <div id="printNav"></div>
+            <div id="ic_ticketContainer" class="overflow-auto"></div>
+        `
+        setScreenHeight()
+    },
+
+    OnPrintClick: function(){
+        this.container.classList.add("hidden")
+        window.print();
+        this.container.classList.remove("hidden")
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="historyNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_printNav.OnReturnClick()">
+                &#8592; ${this.data.returnText} 
+            </div>
+            <div id="ic_dateFilterContainer" class="border"></div>
+            <div class="printBtn" onclick="ic_printNav.OnPrintClick()">
+                ${this.data.printText} &#8594;
+            </div>
+        </div>
+
+        `
+    }
+}
+
+
+let ic_historyNav={
+
+    data:{
+        returnText: "Retour",
+        printText: "Imprimer"
+    },
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()  
+    },
+
+    OnReturnClick: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+
+        this.container.parentElement.innerHTML=`
+            <div id="printNav"></div>
+            <div id="ic_ticketContainer" class="overflow-auto"></div>
+        `
+        setScreenHeight()
+    },
+
+    OnPrintClick: function(){
+        this.container.classList.add("hidden")
+        window.print();
+        this.container.classList.remove("hidden")
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_historyNav.OnReturnClick()">
+                &#8592; ${this.data.returnText} 
+            </div>
+            <div id="ic_dateFilterContainer" class="border border-2 border-sky-500 rounded w-[40%]"></div>
+            <div class="printBtn" onclick="ic_historyNav.OnPrintClick()">
+                ${this.data.printText} &#8594;
+            </div>
+        </div>
+
+        `
+    }
+
+}
+
+
+
+
+let ic_historyPrint={
+    container: null,
+    state:{},
+    data: {
+        storeName: "YUMURTA STORE",
+        logo: "Ressources/Imgs/Y-logo-512x512.png",
+        qrCode: "Ressources/Imgs/qrCode.png",
+        message: "Merci pour votre visite",
+        ticketContent:[],
+        total: null,
+    },
+    
+    setContent:function(content){   
+        this.data.ticketContent= content;
+        this.setTotal();
+    },
+
+    setData: function(){
+        this.data.storeName= AppConfig.Ticket.storeName;
+        this.data.logo= AppConfig.Ticket.logo;
+        this.data.qrCode= AppConfig.Ticket.qrCode;
+        this.data.message= AppConfig.Ticket.message;
+    },
+
+    setTotal:function(){
+        this.data.total= this.data.ticketContent.reduce(
+            (a, b)=> a + b["totalTicket"],0
+        )
+    },
+    
+    render:function(target){
+        this.container= target;
+        let t= document.createElement("template")
+        t.innerHTML= this.ic_htmlTemplate();
+        t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
+        this.container.appendChild(t.content)
+    },
+    
+
+    renderContent:function(){
+        let list= document.createElement("div");
+
+        this.data.ticketContent.forEach(ticket=>{
+            let temp= document.createElement("template");
+            temp.innerHTML+= this.createHolder(ticket);
+            let lineContainer= temp.content.getElementById("lines");
+            lineContainer.appendChild(this.createLines(ticket.content))
+            list.appendChild(temp.content)
+        })
+            return list.innerHTML
+
+    },
+
+    createHolder: function(ticket){
+
+        return this.ic_holderHtml(ticket.ticketId, ticket.count, ticket.totalTicket, ticket.date, ticket.timeClose)
+    },
+
+
+    createLines: function(lines){
+        let t= document.createElement("div")
+        lines.forEach(line=>{
+            let tl= document.createElement("template")
+            tl.innerHTML= this.ic_lineHtml(line.price, line.quantity, line.total);
+            t.appendChild(tl.content)
+        })
+        return t
+
+
+    },
+    
+
+    ic_holderHtml: function(tId,count,total,date,time){
+        return`
+        <div class="ticket overflow-auto">
+                
+                <div class="generalInfo mb-4 border-b-2 border-t-2 w-[85%] m-auto pb-2 pt-2 border-gray-400 border-dashed flex justify-between text-sm flex-wrap">
+                    <div>   
+                        <div id="ticketId">Ticket N°: #${tId.toFixed().padStart(5,0)}</div>
+                        <div>${date}</div>
+                    </div>
+                    <div>
+                        <div id="length">${count} Article(s)</div>
+                        <div>${time}</div>
+                    </div>
+                </div>
+                <div class="goods text-right mb-4">
+    
+                    <div class="titles flex w-full justify-around ">
+    
+                        <div class="w-[4.6rem] text-centr">Prix</div>                    
+                        <div>Qté</div>
+                        <div class="w-[4.6rem]">Total</div>
+                        
+                    </div>
+                    <div class="data justify-center mt-3 mb-3 relative z-10">
+                        <div id="lines">
+                        </div>
+
+                    </div>
+                    <div class="totalTicket flex justify-between w-[85%] m-auto mt-3 mb-3 border-t-2 border-dashed border-gray-400">
+                        <div class="font-bold">Total:</div>
+                        <div id="TotalVal" class="font-bold">${total.toFixed(3)}</div>
+                    </div>
+                    
+                </div>    
+
+            </div>
+        `
+    },
+
+
+    ic_lineHtml: function(price,quantity,total){
+        return`
+        <div class="ligne aspect-[14/1] w-full flex justify-evenly">
+            <div id="Price" class="w-[4.6rem]">${price.toFixed(3)}</div> 
+            <div class="border border-black"></div>
+            <div id="Qte" class="w-[1.25rem]">${quantity}</div>
+            <div class="border border-black"></div>
+            <div id="Tot.u" class="w-[4.6rem] text-right">${total.toFixed(3)}</div>
+        </div>
+        `
+    },
+
+
+    ic_htmlTemplate: function(){
+        let d= new Date()
+        return`
+            <div class="ticketHead p-4">
+                <div class="flex w-[85%] m-auto mb-4 gap-[5%]">
+                    <div class="logo w-[6rem] flex items-center">
+                        <img src="${this.data.logo}">
+                    </div>
+                    <div class="storeName font-black text2 text-center m-auto">${this.data.storeName}</div>
+                </div>
+
+                <div id="allTotal" class="w-full w-[95%] m-auto border border-black h-fit leading-none justify-around p-4">
+                    <div class="text1 flex justify-between leading-6">Date: <div class="font-extrabold">${d.getDate()}/${d.getMonth()}/${d.getFullYear()}</div> </div>
+                    <div class="text1 flex justify-between leading-6">Nombre de Tickets<div class="font-extrabold">${this.data.ticketContent.length}</div></div>
+                    <div class="text1 flex justify-between leading-6">Chiffre de jour: <div class="font-extrabold">${this.data.total.toFixed(3)} DT</div></div>
+                </div>
+
+            </div>
+        
+            <div id="ic_contentContainer"></div>
+                <div id="ticketFoot" class="">
+
+                </div>
+        `
+    },
+    
+    
+}
+
+
+ic_userPic={
+    container: null,
+    state:{},
+    data: {
+        imageUrl: null,
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnchangeEvent: function(elem){
+        let gg= new FileReader();
+        gg.readAsDataURL(elem.files[0])
+
+        gg.onload=()=>{
+            let url= gg.result;
+            this.container.querySelector("#userPreview img").src= url
+            this.data.imageUrl= url
+            AppConfig.user.userPic= url
+            updateConfig()
+        }
+
+    },
+
+    setImgUrl:function(newValue){
+        this.data.imageUrl= newValue
+    },
+
+    ic_html: function(){
+        return`
+        <label for="paramUser" class="block w-[30%] h-fit m-auto relative">
+            <div id="userPreview" class="w-full aspect-square rounded-full border border-gray-400 overflow-hidden">
+                <img src="${this.data.imageUrl}">
+            </div>
+            <div class="w-[22%] aspect-square rounded-full absolute bottom-0 right-2 bg-gray-400 flex items-center justify-center text-white font-extrabold text1">+</div>
+        </label>
+
+        <input id="paramUser" type="file" class="hidden" onchange="ic_userPic.OnchangeEvent(this)" accept="image/*">
+        `
+    }
+}
+
+
+ic_userName={
+    container: null, 
+    state: {},
+    data:{
+        userName:null,
+    },
+
+    render:function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnclickEvent: function(){
+        let name= this.container.querySelector("label")
+        let input= this.container.querySelector("#userName")
+        input.removeAttribute("readonly")
+    },
+
+    OnblurEvent:function(){
+        let input= this.container.querySelector("#userName")
+        input.removeAttribute("readonly")
+        AppConfig.user.userName= input.value
+        this.setUserName(input.value)
+        this.render(this.container)
+        updateConfig()
+    },
+
+
+    setUserName:function(newValue){
+        this.data.userName= newValue;
+    },
+
+
+    ic_html: function(){
+        return`
+
+        <div class="flex items-center justify-center gap-2 w-[50%] m-auto relative">
+            <input id="userName" type="text" placeholder="YUMURTA user" class="text-center text1 block" value="${this.data.userName}" readonly onblur="ic_userName.OnblurEvent()" onfocus="this.select();" maxlength="10">
+
+            <label for="userName" onclick="ic_userName.OnclickEvent()" class="absolute right-0 cursor-pointer">
+                <img src="Ressources/Imgs/edit.png" alt="" class="h-[20px] aspect-square opacity-[50%]">  
+            </label>
+            <style>
+                #userName:read-only:focus{
+                    outline: none;
+                }
+            </style>
+        </div>
+
+        `
+    }
+}
+
+
+let ic_TicketSett={
+    container: null,
+    data:{
+        storeName: null,
+        message: null,
+        ticketId: null,
+        logo: null,
+        Qr: null,
+    },
+
+    render:function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()
+    },
+
+    setData:function(){
+        this.data.storeName= AppConfig.Ticket.storeName;
+        this.data.message= AppConfig.Ticket.message;
+        this.data.ticketId= AppConfig.Ticket.ticketId;
+        this.data.logo= AppConfig.Ticket.logo;
+        this.data.Qr= AppConfig.Ticket.qrCode;
+    },
+
+    OnchangeLogo:function(elem){
+
+            let gg= new FileReader();
+            gg.readAsDataURL(elem.files[0])
+    
+            gg.onload=()=>{
+                let url= gg.result;
+                this.container.querySelector("#logoPreview img").src= url
+                this.data.logo= url
+                AppConfig.Ticket.logo= url
+                updateConfig()
+            }
+    },
+
+    OnchangeQr: function(elem){
+
+        let gg= new FileReader();
+        gg.readAsDataURL(elem.files[0])
+
+        gg.onload=()=>{
+            let url= gg.result;
+            this.container.querySelector("#qrPreview img").src= url
+            this.data.Qr= url
+            AppConfig.Ticket.qrCode= url
+            updateConfig()
+        }
+    },
+
+    OnblurStoreName: function(){
+        let input= this.container.querySelector("#storename")
+        AppConfig.Ticket.storeName= input.value
+        this.data.storeName= input.value
+        updateConfig()
+    },
+
+    OnblurMessage: function(){
+        let input= this.container.querySelector("#message")
+        AppConfig.Ticket.message= input.value
+        this.data.message= input.value
+        updateConfig()
+    },
+
+    OnblurTicketId: function(){
+        let input= this.container.querySelector("#TNumber")
+        this.data.ticketId= parseInt(input.value)
+        AppConfig.Ticket.ticketId= this.data.ticketId
+        updateConfig()
+        ic_CalculatorInfoBar.setTicketId(this.data.ticketId.toFixed())
+        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
+        ic_Display.setTicketId()
+    },
+
+    ic_html: function(){
+        return `
+            <div class="text4">Ticket</div>
+            <label for="storename" class="block text1 mt-4">Nom de store:</label>
+            <input id="storename" type="text" value="${this.data.storeName}" class="border mt-2 border-black text1 rounded w-full h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurStoreName()" onfocus="this.select();">
+            
+            <label for="message" class="text1 block mt-4">Message:</label>
+            <input id="message" type="text" value="${this.data.message}" class="border mt-2 border-black text1 rounded w-full h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurMessage()" onfocus="this.select();">
+            
+            <div class="mt-8 flex gap-[10%]">
+                <label for="TNumber" class="text1 flex items-center">Ticket Number:</label>
+                <input id="TNumber" type="number" onKeyDown="if(this.value>=9999999){this.value='999999';}" value="${(this.data.ticketId).toFixed().padStart(7,0)}" class="border w-[5ch] border-black text1 flex-1 rounded h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurTicketId()" onfocus="this.select();">
+            </div>
+
+            <div class="flex mt-4">
+                <label for="logo" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
+                    <div class="w-fit text1">logo:</div>
+                    <div id="logoPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src="${this.data.logo}"></div>
+                </label>
+                <input type="file" title=" " id="logo" class="block hidden w-full m-auto text-sm text-black
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-violet-50 file:text-gray-700
+                hover:file:bg-violet-100
+                " onchange="ic_TicketSett.OnchangeLogo(this)" accept="image/*"/>
+
+
+                <label for="qr" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
+                    <div class="w-fit text1">qr code:</div>
+                    <div id="qrPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src=${this.data.Qr}></div>
+                </label>
+
+                <input type="file" title=" " id="qr" class="block hidden w-full m-auto text-sm text-black
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0
+                file:text-sm file:font-semibold
+                file:bg-violet-50 file:text-gray-700
+                hover:file:bg-violet-100
+                " onchange="ic_TicketSett.OnchangeQr(this)" accept="image/*"/>
+            </div> 
+        `
+    }
+}
+
+
+ic_languageSett={
+    container: null,
+    state:{
+        arabic: "",
+        french: "",
+    },
+    data:{
+        languageVal: null,
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnchangeEvent:function(){
+        
+        let ele = document.getElementsByName('langue');
+        for (i = 0; i < ele.length; i++) {
+            if (ele[i].checked){
+                this.data.languageVal= ele[i].value
+                AppConfig.Language= this.data.languageVal;
+                updateConfig();
+            }
+        }
+        
+    },
+
+    getValues: function(){
+
+        this.data.languageVal= AppConfig.Language
+        if(this.data.languageVal=="Arabic"){
+            this.state.arabic= 'checked'
+            this.state.french= ''
+        }else{
+            this.state.french= 'checked'
+            this.state.arabic= ''
+        }
+    },
+
+    ic_html: function(){
+        return`
+            <div class="text4 mt-6">Langue</div>
+            <div class="flex justify-evenly">
+                <!--div>
+                    <input id="arabic" type="radio" value="Arabic" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.arabic}>
+                    <label for="arabic">Arabic</label>
+                </div-->
+
+                <div>
+                    <input id="french" type="radio" value="French" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.french}>
+                    <label for="french">French</label>
+                </div>
+            </div>
         `
     }
 }
