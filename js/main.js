@@ -13,7 +13,7 @@ window.onload =  (event) => {
     ic_Display.setTicketId();
     getDailyTickets()
     ic_TicketSett.setData();
-    ic_Printable.setData();
+    ic_Print.setData();
     ic_historyPrint.setData();
 
 
@@ -23,16 +23,16 @@ window.onload =  (event) => {
     numbers.renderBtns();
     ic_nextBtn.render(document.getElementById("ic_nextContainer"));
     ic_backspace.render(document.getElementById("ic_backspaceContainer"))
+
     ic_historyIco.render(document.getElementById("utilities"));
     ic_settingsIco.render(document.getElementById("utilities"));
+    ic_carnetIco.render(document.getElementById("utilities"))
 
     ic_discard.render(document.getElementById("ic_discardContainer"));
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
 
-    ic_settingsNav.render(document.getElementById("settingsNav"))
-
-    //ic_settingsIco.OnclickEvent()
+    //ic_historyIco.OnclickEvent()
 
 
 
@@ -65,7 +65,7 @@ AppConfig={
         currency: "DT"
     },
 
-    Language: "French",
+    Language: "FR",
 
 
 }
@@ -73,7 +73,7 @@ AppConfig={
 
 function updateConfig(){
     localStorage["AppConfig"]= JSON.stringify(AppConfig);
-    ic_Printable.setData();
+    ic_Print.setData();
     ic_historyPrint.setData();
 }
 
@@ -171,9 +171,67 @@ function setScreenHeight(){
 
 
 
+let languages={
+    FR:{
+        return:"Retour",
+        print:"Imprimer",
+        numTicket:"Ticket N°",
+        articles:"Article(s)",
+        price:"Prix",
+        total:"Total",
+        quantity:"Qté",
+        date:"Date",
+        ticketsNbr:"Nombre de Tickets",
+        dailySales:"Chiffre de jour",
+        ticket:"Ticket",
+        storeName:"Nom du Store",
+        message:"Message",
+        logo:"Logo",
+        qr:"Qr Code",
+        language:"Langue",
+        arabic:"Arabe",
+        french:"Français",
+        paidAmmount:"Total payé",
+        curr:"DT",
+        selectDate:"choisir date..."
+    },
 
+    AR:{
+        return:"عودة",
+        print:"طباعة",
+        numTicket:"تذكرة رقم",
+        articles:"مشتريات",
+        price:"الثمن",
+        total:"المجموع",
+        quantity:"الكمية",
+        date:"التاريخ",
+        ticketsNbr:"عدد التذاكر",
+        dailySales:"رقم المعاملات اليومي",
+        ticket:"التذكرة",
+        message:"الرسالة",
+        storeName:"اسم المتجر",
+        logo:"الشعار",
+        qr:"Qr رمز",
+        language:"اللغة",
+        arabic:"العربية",
+        french:"الفرنسية",
+        paidAmmount:"المبلغ المدفوع",
+        curr:"دت",
+        selectDate:"...اختر تاريخ"
+    }
+}
 
+function t(phrase){
+    return languages[AppConfig.Language][phrase]
+}
 
+function dir(){
+    if (AppConfig.Language== "AR"){
+        return "rtl"
+    } else {
+        return "ltr"
+    }
+}
 
 
 

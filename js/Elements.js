@@ -129,7 +129,7 @@ let ic_total={
                         <div class="coma text3 leading-none">,</div>
 
                         <div class="relative">
-                        <div class="leading-none text1">DT</div>
+                        <div class="leading-none text1">${t("curr")}</div>
                         <div id="millimes-total" class="text3 leading-none">${millims}</div>
     
                         </div>
@@ -173,7 +173,7 @@ let ic_totalZoom={
         <div id="totalZoom" class="border border-black flex justify-center h-full items-center bg-gray-700/80" onclick="ic_totalZoom.OnclickEvent()">
             <div class="w-[80%] border h-[20%] flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
                 <div class="text4">TOTAL</div>
-                <div class="text5 font-extrabold">${(this.data.value).toFixed(3)} DT</div>
+                <div class="text5 font-extrabold">${(this.data.value).toFixed(3)} ${t("curr")}</div>
             </div>
         </div>
         `
@@ -379,7 +379,7 @@ class newArticle{
                         
                         <div class="coma text3 leading-none">,</div>
                             <div class="flex flex-col relative">
-                                <div class="currency leading-none text1">DT</div>
+                                <div class="currency leading-none text1">${t("curr")}</div>
                                 <div class="millimes-box text3 leading-none">000</div>
                             </div>
     
@@ -777,6 +777,12 @@ let ic_Display={
 }
 
 
+
+
+
+
+
+
 let numbers={
 
     container: null,
@@ -922,34 +928,10 @@ class ic_numBtn {
 }
 
 
-let ic_historyIco={
-
-    container: null,
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML+= this.ic_html();
-    },
 
 
-    OnclickEvent: function(){
-        ic_historyNav.render(document.getElementById("printNav"))
-        ic_historyPrint.setContent(dailyTickets)
-        ic_historyPrint.render(document.getElementById("ic_ticketContainer"))
-        ic_dateFilter.getOptions()
-        ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
-        goToPrintScreen();
-    },
 
 
-    ic_html:function(){
-        return `
-        <div onclick="ic_historyIco.OnclickEvent()">
-            <img id="historyIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/History.png">
-        </div>
-        `
-    }
-}
 
 
 let ic_validate={
@@ -1010,8 +992,8 @@ let ic_validate={
         ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         //fillTicket();
         ic_printNav.render(document.getElementById("printNav"))
-        ic_Printable.setContent([dailyTickets[dailyTickets.length-1]])
-        ic_Printable.render(document.getElementById("ic_ticketContainer"));
+        ic_Print.setContent([dailyTickets[dailyTickets.length-1]])
+        ic_Print.render(document.getElementById("ic_ticketContainer"));
         goToPrintScreen();
     }},
 
@@ -1048,7 +1030,7 @@ let ic_validate={
 }
 
 
-let ic_Printable={
+let ic_Print={
     container: null,
     state:{},
     data: {
@@ -1085,7 +1067,7 @@ let ic_Printable={
     render:function(target){
         this.container= target;
         let t= document.createElement("template")
-        t.innerHTML= this.ic_htmlTemplate();
+        t.innerHTML= this.ic_htmlTemplate()
         t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
         this.container.appendChild(t.content)
     },
@@ -1106,7 +1088,6 @@ let ic_Printable={
     },
 
     createHolder: function(ticket){
-
         return this.ic_holderHtml(ticket.ticketId, ticket.count, ticket.totalTicket, ticket.date, ticket.timeClose)
     },
 
@@ -1119,49 +1100,47 @@ let ic_Printable={
             t.appendChild(tl.content)
         })
         return t
-
-
     },
-    
+
 
     ic_holderHtml: function(tId,count,total,date,time){
         return`
         <div class="ticket overflow-auto">
                 
-                <div class="generalInfo mb-4 border-b-2 border-t-2 w-[85%] m-auto pb-2 pt-2 border-gray-400 border-dashed flex justify-between text-sm flex-wrap">
-                    <div>   
-                        <div id="ticketId">Ticket N°: #${tId.toFixed().padStart(5,0)}</div>
-                        <div>${date}</div>
-                    </div>
-                    <div>
-                        <div id="length">${count} Article(s)</div>
-                        <div>${time}</div>
-                    </div>
-                </div>
-                <div class="goods text-right mb-4">
-    
-                    <div class="titles flex w-full justify-around ">
-    
-                        <div class="w-[4.6rem] text-centr">Prix</div>                    
-                        <div>Qté</div>
-                        <div class="w-[4.6rem]">Total</div>
-                        
-                    </div>
-                    <div class="data justify-center mt-3 mb-3 relative z-10">
-                        <div id="lines">
-                        </div>
+        <div class="generalInfo mb-4 border-b-2 border-t-2 w-[85%] m-auto pb-2 pt-2 border-gray-400 border-dashed flex justify-between text-sm flex-wrap">
+            <div>   
+                <div id="ticketId">${t("numTicket")}: #${tId.toFixed().padStart(5,0)}</div>
+                <div>${date}</div>
+            </div>
+            <div>
+                <div id="length">${count} ${t("articles")}</div>
+                <div>${time}</div>
+            </div>
+        </div>
+        <div class="goods text-right mb-4">
 
-                    </div>
-                    <div class="totalTicket flex justify-between w-[85%] m-auto mt-3 mb-3 border-t-2 border-dashed border-gray-400">
-                        <div class="font-bold">Total:</div>
-                        <div id="TotalVal" class="font-bold">${total.toFixed(3)}</div>
-                    </div>
-                    
-                </div>    
+            <div class="titles flex w-full justify-around ">
+
+                <div class="w-[4.6rem] text-centr">${t("price")}</div>                    
+                <div>${t("quantity")}</div>
+                <div class="w-[4.6rem]">${t("total")}</div>
+                
+            </div>
+            <div class="data justify-center mt-3 mb-3 relative z-10">
+                <div id="lines">
+                </div>
 
             </div>
-        `
-    },
+            <div class="totalTicket flex justify-between w-[85%] m-auto mt-3 mb-3 border-t-2 border-dashed border-gray-400">
+                <div class="font-bold">${t("total")}:</div>
+                <div id="TotalVal" class="font-bold">${total.toFixed(3)} ${t("curr")}</div>
+            </div>
+            
+        </div>    
+
+    </div>
+`
+},
 
 
     ic_lineHtml: function(price,quantity,total){
@@ -1179,34 +1158,167 @@ let ic_Printable={
 
     ic_htmlTemplate: function(){
         return`
-            <div class="ticketHead p-4">
-            <div class="flex w-[85%] m-auto gap-[5%]">
-            <div class="logo w-[6rem] flex items-center">
-                <img src="${this.data.logo}">
-            </div>
-            <div class="storeName font-black text2 text-center m-auto">${this.data.storeName}</div>
-        </div>
+            <div class="ticketHead p-4" dir="${dir()}">
+                <div class="flex w-[85%] m-auto gap-[5%]">
+                    <div class="logo w-[6rem] flex items-center">
+                        <img src="${this.data.logo}">
+                    </div>
+                    <div class="storeName font-black text2 text-center m-auto">${this.data.storeName}</div>
+                </div>
             </div>
         
-            <div id="ic_contentContainer"></div>
-                <div id="ticketFoot" class="">
-                    <div id="allTotal" class="w-full font-extrabold w-[85%] m-auto border border-black h-[3rem] leading-[3rem] flex justify-around text4">
-                        <div>Total payé: </div>
-                        <div>${this.data.total.toFixed(3)} DT</div>
-                    </div>
-                    <div class="flex w-[85%] justify-between m-auto mt-4 mb-4">
+            <div id="ic_contentContainer" dir="${dir()}"></div>
+            <div id="ticketFoot" class="" dir="${dir()}">
+                <div id="allTotal" class="w-full font-extrabold w-[85%] m-auto border border-black h-[3rem] leading-[3rem] flex justify-around text4">
+                    <div>${t("paidAmmount")}: </div>
+                    <div>${this.data.total.toFixed(3)} ${t("curr")}</div>
+                </div>
+
+                <div class="flex w-[85%] justify-between m-auto mt-4 mb-4">
                     <div id="qrCode" class="m-auto w-[20%]">
                         <img src="${this.data.qrCode}" >
                     </div>
             
-                <div id="msg" class="text-center w-[70%] h-fit m-auto">${this.data.message}</div>
-                
+                    <div id="msg" class="text-center w-[70%] h-fit m-auto">${this.data.message}</div>
+                </div>
             </div>
-        </div>
         `
     },
+
     
     
+}
+
+
+let ic_printNav={
+
+    container: null,
+    data:{},
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()
+    },
+
+    OnReturnClick: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+
+        this.container.parentElement.innerHTML=`
+            <div id="printNav"></div>
+            <div id="ic_ticketContainer" class="overflow-auto"></div>
+        `
+        setScreenHeight()
+    },
+
+    OnPrintClick: function(){
+        this.container.classList.add("hidden")
+        window.print();
+        this.container.classList.remove("hidden")
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="printNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_printNav.OnReturnClick()">
+                &#8592; ${t("return")} 
+            </div>
+            <div id="ic_dateFilterContainer" class="border"></div>
+            <div class="printBtn" onclick="ic_printNav.OnPrintClick()">
+            ${t("print")} &#8594;
+            </div>
+        </div>
+
+        `
+    },
+}
+
+
+
+
+
+
+
+let ic_historyIco={
+
+    container: null,
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html();
+    },
+
+
+    OnclickEvent: function(){
+        ic_historyNav.render(document.getElementById("printNav"))
+        ic_historyPrint.setContent(dailyTickets)
+        ic_historyPrint.render(document.getElementById("ic_ticketContainer"))
+        ic_dateFilter.getOptions()
+        ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
+        goToPrintScreen();
+    },
+
+
+    ic_html:function(){
+        return `
+        <div onclick="ic_historyIco.OnclickEvent()">
+            <img id="historyIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/History.png">
+        </div>
+        `
+    }
+}
+
+
+let ic_historyNav={
+
+    data:{},
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html() 
+    },
+
+    OnReturnClick: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+
+        this.container.parentElement.innerHTML=`
+            <div id="printNav"></div>
+            <div id="ic_ticketContainer" class="overflow-auto"></div>
+        `
+        setScreenHeight()
+    },
+
+    OnPrintClick: function(){
+        this.container.classList.add("hidden")
+        window.print();
+        this.container.classList.remove("hidden")
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_historyNav.OnReturnClick()">
+                &#8592; ${t("return")} 
+            </div>
+            <div id="ic_dateFilterContainer" class="border border-2 border-sky-500 rounded w-[40%]"></div>
+            <div class="printBtn" onclick="ic_historyNav.OnPrintClick()">
+            ${t("print")} &#8594;
+            </div>
+        </div>
+
+        `
+    },
 }
 
 
@@ -1222,7 +1334,7 @@ let ic_dateFilter={
         this.container = target;
 
         let t= document.createElement("template")
-        t.innerHTML= this.ic_html();
+        t.innerHTML= this.ic_html()
         t.content.querySelectorAll("#ic_dateFilter")[0].innerHTML+= this.createOptions();
         this.container.appendChild(t.content.querySelector("#ic_dateFilter"));
     },
@@ -1251,205 +1363,23 @@ let ic_dateFilter={
 
     ic_html: function(){
         return`
-        <select id="ic_dateFilter" onchange="ic_dateFilter.OnchangeEvent()" class="w-full">
-            <option value="" disabled selected>Select...date</option>
+        <select dir="${dir()}" id="ic_dateFilter" onchange="ic_dateFilter.OnchangeEvent()" class="w-full">
+            <option value="" disabled selected>${t("selectDate")}</option>
         </select>
         `
-    }
+    },
 
 }
-
-
-let ic_settingsIco={ 
-
-    container: null,
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML+= this.ic_html();
-    },
-
-
-    OnclickEvent: function(){
-        let calcScreen= document.getElementById("calculator")
-        let settingScreen= document.getElementById("settings")
-        calcScreen.classList.add("hidden");
-        settingScreen.classList.remove("hidden");
-
-        ic_userName.setUserName(AppConfig.user.userName);
-        ic_userPic.setImgUrl(AppConfig.user.userPic);
-
-        ic_userPic.render(document.getElementById("profilePic"))
-        ic_userName.render(document.getElementById("nameHolder"))
-
-        ic_languageSett.getValues();
-        ic_TicketSett.render(document.getElementById("ticketSett"))
-        ic_languageSett.render(document.getElementById("settLanguage"))
-
-    },
-
-
-    ic_html:function(){
-        return `
-        <div onclick="ic_settingsIco.OnclickEvent()">
-            <img id="settingsIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/settings.png">
-        </div>
-        `
-    }
-}
-
-
-let ic_settingsNav={
-    container: null,
-    data:{
-        returnText: "retour",
-    },
-
-    state:{
-        mode: "light"
-    },
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html()
-        
-    },
-
-    return: function(){
-        this.container.parentElement.classList.add("hidden");
-        document.getElementById("calculator").classList.remove("hidden");
-        setScreenHeight()
-    },
-
-    ic_html: function(){
-        return` 
-        
-        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
-            <div class="return" onclick="ic_settingsNav.return()">
-                &#8592; ${this.data.returnText} 
-            </div>
-        </div>
-
-        `
-    }
-}
-
-
-
-let ic_printNav={
-
-    container: null,
-    data:{
-        returnText: "Retour",
-        printText: "Imprimer"
-    },
-
-    state:{
-        mode: "light"
-    },
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html()  
-    },
-
-    OnReturnClick: function(){
-        this.container.parentElement.classList.add("hidden");
-        document.getElementById("calculator").classList.remove("hidden");
-
-        this.container.parentElement.innerHTML=`
-            <div id="printNav"></div>
-            <div id="ic_ticketContainer" class="overflow-auto"></div>
-        `
-        setScreenHeight()
-    },
-
-    OnPrintClick: function(){
-        this.container.classList.add("hidden")
-        window.print();
-        this.container.classList.remove("hidden")
-    },
-
-    ic_html: function(){
-        return` 
-        
-        <div id="historyNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
-            <div class="return" onclick="ic_printNav.OnReturnClick()">
-                &#8592; ${this.data.returnText} 
-            </div>
-            <div id="ic_dateFilterContainer" class="border"></div>
-            <div class="printBtn" onclick="ic_printNav.OnPrintClick()">
-                ${this.data.printText} &#8594;
-            </div>
-        </div>
-
-        `
-    }
-}
-
-
-let ic_historyNav={
-
-    data:{
-        returnText: "Retour",
-        printText: "Imprimer"
-    },
-
-    state:{
-        mode: "light"
-    },
-
-    render: function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html()  
-    },
-
-    OnReturnClick: function(){
-        this.container.parentElement.classList.add("hidden");
-        document.getElementById("calculator").classList.remove("hidden");
-
-        this.container.parentElement.innerHTML=`
-            <div id="printNav"></div>
-            <div id="ic_ticketContainer" class="overflow-auto"></div>
-        `
-        setScreenHeight()
-    },
-
-    OnPrintClick: function(){
-        this.container.classList.add("hidden")
-        window.print();
-        this.container.classList.remove("hidden")
-    },
-
-    ic_html: function(){
-        return` 
-        
-        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
-            <div class="return" onclick="ic_historyNav.OnReturnClick()">
-                &#8592; ${this.data.returnText} 
-            </div>
-            <div id="ic_dateFilterContainer" class="border border-2 border-sky-500 rounded w-[40%]"></div>
-            <div class="printBtn" onclick="ic_historyNav.OnPrintClick()">
-                ${this.data.printText} &#8594;
-            </div>
-        </div>
-
-        `
-    }
-
-}
-
-
 
 
 let ic_historyPrint={
     container: null,
     state:{},
     data: {
-        storeName: "YUMURTA STORE",
-        logo: "Ressources/Imgs/Y-logo-512x512.png",
-        qrCode: "Ressources/Imgs/qrCode.png",
-        message: "Merci pour votre visite",
+        storeName: null,
+        logo: null,
+        qrCode: null,
+        message: null,
         ticketContent:[],
         total: null,
     },
@@ -1475,7 +1405,7 @@ let ic_historyPrint={
     render:function(target){
         this.container= target;
         let t= document.createElement("template")
-        t.innerHTML= this.ic_htmlTemplate();
+        t.innerHTML= this.ic_htmlTemplate()
         t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
         this.container.appendChild(t.content)
     },
@@ -1496,7 +1426,6 @@ let ic_historyPrint={
     },
 
     createHolder: function(ticket){
-
         return this.ic_holderHtml(ticket.ticketId, ticket.count, ticket.totalTicket, ticket.date, ticket.timeClose)
     },
 
@@ -1520,11 +1449,11 @@ let ic_historyPrint={
                 
                 <div class="generalInfo mb-4 border-b-2 border-t-2 w-[85%] m-auto pb-2 pt-2 border-gray-400 border-dashed flex justify-between text-sm flex-wrap">
                     <div>   
-                        <div id="ticketId">Ticket N°: #${tId.toFixed().padStart(5,0)}</div>
+                        <div id="ticketId">${t("numTicket")}: #${tId.toFixed().padStart(5,0)}</div>
                         <div>${date}</div>
                     </div>
                     <div>
-                        <div id="length">${count} Article(s)</div>
+                        <div id="length">${count} ${t("articles")}</div>
                         <div>${time}</div>
                     </div>
                 </div>
@@ -1532,9 +1461,9 @@ let ic_historyPrint={
     
                     <div class="titles flex w-full justify-around ">
     
-                        <div class="w-[4.6rem] text-centr">Prix</div>                    
-                        <div>Qté</div>
-                        <div class="w-[4.6rem]">Total</div>
+                        <div class="w-[4.6rem] text-centr">${t("price")}</div>                    
+                        <div>${t("quantity")}</div>
+                        <div class="w-[4.6rem]">${t("total")}</div>
                         
                     </div>
                     <div class="data justify-center mt-3 mb-3 relative z-10">
@@ -1543,8 +1472,8 @@ let ic_historyPrint={
 
                     </div>
                     <div class="totalTicket flex justify-between w-[85%] m-auto mt-3 mb-3 border-t-2 border-dashed border-gray-400">
-                        <div class="font-bold">Total:</div>
-                        <div id="TotalVal" class="font-bold">${total.toFixed(3)}</div>
+                        <div class="font-bold">${t("total")}:</div>
+                        <div id="TotalVal" class="font-bold">${total.toFixed(3)} ${t("curr")}</div>
                     </div>
                     
                 </div>    
@@ -1570,7 +1499,7 @@ let ic_historyPrint={
     ic_htmlTemplate: function(){
         let d= new Date()
         return`
-            <div class="ticketHead p-4">
+            <div class="ticketHead p-4" dir="${dir()}">
                 <div class="flex w-[85%] m-auto mb-4 gap-[5%]">
                     <div class="logo w-[6rem] flex items-center">
                         <img src="${this.data.logo}">
@@ -1578,15 +1507,15 @@ let ic_historyPrint={
                     <div class="storeName font-black text2 text-center m-auto">${this.data.storeName}</div>
                 </div>
 
-                <div id="allTotal" class="w-full w-[95%] m-auto border border-black h-fit leading-none justify-around p-4">
-                    <div class="text1 flex justify-between leading-6">Date: <div class="font-extrabold">${d.getDate()}/${d.getMonth()}/${d.getFullYear()}</div> </div>
-                    <div class="text1 flex justify-between leading-6">Nombre de Tickets<div class="font-extrabold">${this.data.ticketContent.length}</div></div>
-                    <div class="text1 flex justify-between leading-6">Chiffre de jour: <div class="font-extrabold">${this.data.total.toFixed(3)} DT</div></div>
+                <div dir="${dir()}" id="allTotal" class="w-full w-[95%] m-auto border border-black h-fit leading-none justify-around p-4">
+                    <div class="text1 flex justify-between leading-6">${t("date")}: <div class="font-extrabold">${d.getDate()}/${d.getMonth()}/${d.getFullYear()}</div> </div>
+                    <div class="text1 flex justify-between leading-6">${t("ticketsNbr")}:<div class="font-extrabold">${this.data.ticketContent.length}</div></div>
+                    <div class="text1 flex justify-between leading-6">${t("dailySales")}: <div class="font-extrabold">${this.data.total.toFixed(3)} ${t("curr")}</div></div>
                 </div>
 
             </div>
         
-            <div id="ic_contentContainer"></div>
+            <div id="ic_contentContainer" dir="${dir()}"></div>
                 <div id="ticketFoot" class="">
 
                 </div>
@@ -1594,6 +1523,88 @@ let ic_historyPrint={
     },
     
     
+}
+
+
+
+
+
+
+
+
+
+let ic_settingsIco={ 
+
+    container: null,
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html();
+    },
+
+
+    OnclickEvent: function(){
+        let calcScreen= document.getElementById("calculator")
+        let settingScreen= document.getElementById("settings")
+        calcScreen.classList.add("hidden");
+        settingScreen.classList.remove("hidden");
+
+        ic_userName.setUserName(AppConfig.user.userName);
+        ic_userPic.setImgUrl(AppConfig.user.userPic);
+
+        ic_settingsNav.render(document.getElementById("settingsNav"))
+        ic_userPic.render(document.getElementById("profilePic"))
+        ic_userName.render(document.getElementById("nameHolder"))
+
+        ic_languageSett.getValues();
+        ic_TicketSett.render(document.getElementById("ticketSett"))
+        ic_languageSett.render(document.getElementById("settLanguage"))
+
+    },
+
+
+    ic_html:function(){
+        return `
+        <div onclick="ic_settingsIco.OnclickEvent()">
+            <img id="settingsIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/settings.png">
+        </div>
+        `
+    }
+}
+
+
+let ic_settingsNav={
+    container: null,
+    data:{
+    },
+
+    state:{
+        mode: "light"
+    },
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()   
+    },
+
+    return: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+        setScreenHeight()
+        ic_total.render(ic_total.container)
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_settingsNav.return()">
+                &#8592; ${t("return")} 
+            </div>
+        </div>
+
+        `
+    },
 }
 
 
@@ -1651,7 +1662,7 @@ ic_userName={
 
     render:function(target){
         this.container= target;
-        this.container.innerHTML= this.ic_html();
+        this.container.innerHTML= this.ic_html()
     },
 
     OnclickEvent: function(){
@@ -1678,7 +1689,7 @@ ic_userName={
     ic_html: function(){
         return`
 
-        <div class="flex items-center justify-center gap-2 w-[50%] m-auto relative">
+        <div class="flex items-center justify-center gap-2 w-[50%] m-auto relative" dir="${dir()}">
             <input id="userName" type="text" placeholder="YUMURTA user" class="text-center text1 block" value="${this.data.userName}" readonly onblur="ic_userName.OnblurEvent()" onfocus="this.select();" maxlength="10">
 
             <label for="userName" onclick="ic_userName.OnclickEvent()" class="absolute right-0 cursor-pointer">
@@ -1692,7 +1703,8 @@ ic_userName={
         </div>
 
         `
-    }
+    },
+
 }
 
 
@@ -1709,6 +1721,7 @@ let ic_TicketSett={
     render:function(target){
         this.container= target;
         this.container.innerHTML= this.ic_html()
+
     },
 
     setData:function(){
@@ -1773,21 +1786,22 @@ let ic_TicketSett={
 
     ic_html: function(){
         return `
-            <div class="text4">Ticket</div>
-            <label for="storename" class="block text1 mt-4">Nom de store:</label>
+        <div dir="${dir()}">
+            <div class="text4">${t("ticket")}</div>
+            <label for="storename" class="block text1 mt-4">${t("storeName")}:</label>
             <input id="storename" type="text" value="${this.data.storeName}" class="border mt-2 border-black text1 rounded w-full h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurStoreName()" onfocus="this.select();">
             
-            <label for="message" class="text1 block mt-4">Message:</label>
+            <label for="message" class="text1 block mt-4">${t("message")}:</label>
             <input id="message" type="text" value="${this.data.message}" class="border mt-2 border-black text1 rounded w-full h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurMessage()" onfocus="this.select();">
             
             <div class="mt-8 flex gap-[10%]">
-                <label for="TNumber" class="text1 flex items-center">Ticket Number:</label>
+                <label for="TNumber" class="text1 flex items-center">${t("numTicket")}:</label>
                 <input id="TNumber" type="number" onKeyDown="if(this.value>=9999999){this.value='999999';}" value="${(this.data.ticketId).toFixed().padStart(7,0)}" class="border w-[5ch] border-black text1 flex-1 rounded h-fit p-1 pl-2" onblur="ic_TicketSett.OnblurTicketId()" onfocus="this.select();">
             </div>
 
             <div class="flex mt-4">
                 <label for="logo" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
-                    <div class="w-fit text1">logo:</div>
+                    <div class="w-fit text1">${t("logo")}:</div>
                     <div id="logoPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src="${this.data.logo}"></div>
                 </label>
                 <input type="file" title=" " id="logo" class="block hidden w-full m-auto text-sm text-black
@@ -1800,7 +1814,7 @@ let ic_TicketSett={
 
 
                 <label for="qr" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
-                    <div class="w-fit text1">qr code:</div>
+                    <div class="w-fit text1">${t("qr")}:</div>
                     <div id="qrPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src=${this.data.Qr}></div>
                 </label>
 
@@ -1812,8 +1826,10 @@ let ic_TicketSett={
                 hover:file:bg-violet-100
                 " onchange="ic_TicketSett.OnchangeQr(this)" accept="image/*"/>
             </div> 
+        </div>
         `
-    }
+    },
+
 }
 
 
@@ -1829,7 +1845,8 @@ ic_languageSett={
 
     render: function(target){
         this.container= target;
-        this.container.innerHTML= this.ic_html();
+        this.container.innerHTML= this.ic_html()
+
     },
 
     OnchangeEvent:function(){
@@ -1842,35 +1859,68 @@ ic_languageSett={
                 updateConfig();
             }
         }
-        
+        ic_settingsIco.OnclickEvent()
     },
 
     getValues: function(){
 
         this.data.languageVal= AppConfig.Language
-        if(this.data.languageVal=="Arabic"){
+        if(this.data.languageVal=="AR"){
             this.state.arabic= 'checked'
             this.state.french= ''
         }else{
             this.state.french= 'checked'
             this.state.arabic= ''
         }
+
+
     },
 
     ic_html: function(){
         return`
-            <div class="text4 mt-6">Langue</div>
+        <div dir="${dir()}">
+            <div class="text4 mt-6">${t("language")}</div>
             <div class="flex justify-evenly">
-                <!--div>
-                    <input id="arabic" type="radio" value="Arabic" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.arabic}>
-                    <label for="arabic">Arabic</label>
-                </div-->
+                <div>
+                    <input id="arabic" type="radio" value="AR" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.arabic}>
+                    <label for="arabic">${t("arabic")}</label>
+                </div>
 
                 <div>
-                    <input id="french" type="radio" value="French" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.french}>
-                    <label for="french">French</label>
+                    <input id="french" type="radio" value="FR" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.french}>
+                    <label for="french">${t("french")}</label>
                 </div>
             </div>
+        </div>
+        `
+    },
+
+}
+
+
+
+
+
+let ic_carnetIco={ 
+
+    container: null,
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html();
+    },
+
+
+    OnclickEvent: function(){
+
+    },
+
+
+    ic_html:function(){
+        return `
+        <div onclick="ic_carnetIco.OnclickEvent()" class="hidden">
+            <img id="settingsIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/Carnet.png">
+        </div>
         `
     }
 }
