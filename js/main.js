@@ -33,7 +33,6 @@ window.onload =  (event) => {
     ic_total.render(document.getElementById("ic_totalContainer"));
     ic_total.swipeDownDetect()
 
-    ic_CreditIco.OnclickEvent()
 
 }
 
