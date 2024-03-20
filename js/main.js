@@ -26,15 +26,14 @@ window.onload =  (event) => {
 
     ic_historyIco.render(document.getElementById("utilities"));
     ic_settingsIco.render(document.getElementById("utilities"));
-    ic_carnetIco.render(document.getElementById("utilities"))
+    ic_CreditIco.render(document.getElementById("utilities"))
 
     ic_discard.render(document.getElementById("ic_discardContainer"));
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
+    ic_total.swipeDownDetect()
 
-    //ic_historyIco.OnclickEvent()
-
-
+    ic_CreditIco.OnclickEvent()
 
 }
 
@@ -43,7 +42,10 @@ dailyTickets=[]; //REPRESENTS THE VALID TICKETS FOR TODAY
 
 counter= 1; 
 
-AppData={};
+AppData={
+    tickets: {},
+    credit: {}
+};
 
 AppConfig={
 
@@ -77,6 +79,10 @@ function updateConfig(){
     ic_historyPrint.setData();
 }
 
+function updateData(){
+    localStorage.setItem("AppData", JSON.stringify(AppData))
+}
+
 
 
 function makeFloat(value) { //#WILL BE CHANGED# ADDS "." TO PRICE VALUE WHEN THE USER FORGETS TO DO SO
@@ -89,18 +95,6 @@ function makeFloat(value) { //#WILL BE CHANGED# ADDS "." TO PRICE VALUE WHEN THE
         return value.slice(0, 2) + "." + value.slice(2);
 
     }
-}
-
-
-function getEarlyDate(daysBack){ //RETURNS THE DATE BEFORE A SPECIFIC NUMBER OF DAYS GIVEN AS THE ARGUMENT
-
-    let day = new Date();
-    day.setDate(day.getDate()- daysBack)
-    var dd = String(day.getDate()).padStart(2, '0');
-    var mm = String(day.getMonth() + 1).padStart(2, '0'); //January is 0!
-    var yyyy = String(day.getFullYear());
-
-    return mm + '/' + dd + '/' + yyyy;
 }
 
 
@@ -119,15 +113,15 @@ function loadData(){ //CHECKS FOR DAILY TICKETS IN LOCAL STORAGE
 function getDailyTickets(){
     let date= ic_Display.data.date;
 
-    if(date in AppData){
+    if(date in AppData.tickets){
         try {
-            dailyTickets=(AppData[date]);
+            dailyTickets=(AppData.tickets[date]);
         } catch (error) {
             console.log("Good day! Here..Open your first ticket")
         }
 
     } else {
-        AppData[date]=[]
+        AppData.tickets[date]=[]
     }
 }
 
@@ -138,18 +132,6 @@ function goToPrintScreen(){
     let calculator= document.getElementById("calculator");
     printScreen.classList.remove("hidden");
     calculator.classList.add("hidden")
-}
-
-
-function returnToCalc(){ 
-    //NAVIGATES TO THE CALCULATOR SCREEN (TICKET PREVIEW) BY HIDING THE PRINT SCREEN AND DISPLAYING THE CALCULATOR
-    let printScreen= document.getElementById("print");
-    let calculator= document.getElementById("calculator");
-    printScreen.classList.add("hidden");
-    calculator.classList.remove("hidden");
-    setScreenHeight()
-    document.getElementById("ic_ticketContainer").innerHTML=``
-    document.getElementById("ic_dateFilterContainer").innerHTML=``
 }
 
 
@@ -193,7 +175,15 @@ let languages={
         french:"Français",
         paidAmmount:"Total payé",
         curr:"DT",
-        selectDate:"choisir date..."
+        selectDate:"choisir date...",
+        addToCredit:"Ajouter au carnet de credit",
+        clientName:"Nom de client",
+        telNum:"N° Tel",
+        add:"Ajouter",
+        name:"Nom",
+        ammount:"Montant",
+        call:"Appeler",
+        sendSMS: "Envoyer SMS",
     },
 
     AR:{
@@ -217,7 +207,15 @@ let languages={
         french:"الفرنسية",
         paidAmmount:"المبلغ المدفوع",
         curr:"دت",
-        selectDate:"...اختر تاريخ"
+        selectDate:"...اختر تاريخ",
+        addToCredit:"أضف إلى دفتر الكريدي",
+        clientName:"اسم الحريف",
+        telNum:"رقم الهاتف",
+        add:"إضافة",
+        name:"الاسم",
+        ammount:"مبلغ الدين",
+        call:"اتصال",
+        sendSMS: "أرسل SMS",
     }
 }
 

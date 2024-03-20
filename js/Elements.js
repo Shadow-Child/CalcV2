@@ -109,12 +109,11 @@ let ic_total={
         let dinars= splitted[0];
         let millims= splitted[1];
         this.container.innerHTML= this.ic_html(dinars,millims);
-        this.swipeDownDetect()
     },
 
     OnclickEvent:function(){
         ic_totalZoom.setValue(this.data.total)
-        ic_totalZoom.render(document.getElementById("totalZoomContainer"))
+        ic_totalZoom.render(document.getElementById("popUpContainer"))
     },
 
 
@@ -165,13 +164,14 @@ let ic_totalZoom={
     },
 
     OnclickEvent: function(){
+        this.container.innerHTML= ``
         this.container.classList.add("hidden")
     },
 
     ic_html: function(){
         return`
         <div id="totalZoom" class="border border-black flex justify-center h-full items-center bg-gray-700/80" onclick="ic_totalZoom.OnclickEvent()">
-            <div class="w-[80%] border h-[20%] flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
+            <div class="w-[80%] border max-w-[400px] h-[20%] flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
                 <div class="text4">TOTAL</div>
                 <div class="text5 font-extrabold">${(this.data.value).toFixed(3)} ${t("curr")}</div>
             </div>
@@ -222,7 +222,7 @@ let ic_nextBtn={
 
             ic_Display.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
-
+            ic_total.swipeDownDetect()
             
         }
         else if( actualEdit.state== "FOCUSED" && articleState== "FOCUSED" && actualEdit.quantity.numeric !=0 ){
@@ -232,6 +232,7 @@ let ic_nextBtn={
             actualEdit.calcTotal();
             ic_Display.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
+            ic_total.swipeDownDetect()
 
             let notValid= ic_Display.data.articles.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
@@ -482,7 +483,7 @@ class newArticle{
         ic_Display.calcTicketTotal();
         ic_Display.refreshArticlesIndicator()
         ic_total.render(document.getElementById("ic_totalContainer"));
-    
+        ic_total.swipeDownDetect()
     };
 
     swipeLeftDetect= function(){
@@ -529,6 +530,7 @@ class newArticle{
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"))
+        ic_total.swipeDownDetect()
 
         this.state="FOCUSED";
         this.price.state= "FOCUSED";
@@ -543,6 +545,7 @@ class newArticle{
         prev?.stopEdit();
         prev?.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
+        ic_total.swipeDownDetect()
 
         this.state="FOCUSED"
         this.price.state= "BLUR";
@@ -555,6 +558,7 @@ class newArticle{
     stopEdit= function(){
         this.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
+        ic_total.swipeDownDetect()
 
         this.state="BLUR";
         this.price.state= "BLUR";
@@ -638,15 +642,6 @@ let ic_Display={
 
     setTicketId: function(){
         this.data.ticketId= AppConfig.Ticket.ticketId
-        /*for (let i = 0; i < 7;i++) {
-            if (AppData[getEarlyDate(i)]) {
-                let prevdailyTickets= AppData[getEarlyDate(i)];
-                this.data.ticketId= prevdailyTickets[prevdailyTickets.length-1].ticketId+1
-                break
-            }else{
-                this.data.ticketId=1; 
-            }
-        }*/
         ic_CalculatorInfoBar.setTicketId(this.data.ticketId.toFixed())
     },
 
@@ -741,6 +736,7 @@ let ic_Display={
     
             this.calcTicketTotal();
             ic_total.render(document.getElementById("ic_totalContainer"));
+            ic_total.swipeDownDetect()
         }
     
     },
@@ -982,8 +978,8 @@ let ic_validate={
     })
     
         ic_Display.data.articles.forEach(el=>{el.deleteArticle()})
-        AppData[`${ic_Display.data.date}`]= dailyTickets;
-        localStorage.setItem("AppData", JSON.stringify(AppData))
+        AppData.tickets[`${ic_Display.data.date}`]= dailyTickets;
+        updateData();
         AppConfig.Ticket.ticketId+=1;
         updateConfig();
         ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
@@ -1070,6 +1066,8 @@ let ic_Print={
         t.innerHTML= this.ic_htmlTemplate()
         t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
         this.container.appendChild(t.content)
+        ic_addCarnetIco.render(document.getElementById("addCarnetContainer"))
+
     },
     
 
@@ -1158,7 +1156,9 @@ let ic_Print={
 
     ic_htmlTemplate: function(){
         return`
-            <div class="ticketHead p-4" dir="${dir()}">
+            <div class="ticketHead m-4 relative" dir="${dir()}">
+            <div id="addCarnetContainer" class="flex flex-row-reverse absolute w-full top-10 z-[99]"></div>
+
                 <div class="flex w-[85%] m-auto gap-[5%]">
                     <div class="logo w-[6rem] flex items-center">
                         <img src="${this.data.logo}">
@@ -1278,9 +1278,7 @@ let ic_historyNav={
 
     data:{},
 
-    state:{
-        mode: "light"
-    },
+    state:{},
 
     render: function(target){
         this.container= target;
@@ -1307,7 +1305,7 @@ let ic_historyNav={
     ic_html: function(){
         return` 
         
-        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+        <div id="historyNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
             <div class="return" onclick="ic_historyNav.OnReturnClick()">
                 &#8592; ${t("return")} 
             </div>
@@ -1340,7 +1338,7 @@ let ic_dateFilter={
     },
 
     getOptions: function(){
-        this.data.options= Object.keys(AppData);
+        this.data.options= Object.keys(AppData.tickets);
     },
 
     createOptions:function(){
@@ -1353,7 +1351,7 @@ let ic_dateFilter={
 
     OnchangeEvent: function(){
         this.data.value= this.container.children[0].value 
-        ic_historyPrint.setContent(AppData[this.data.value])
+        ic_historyPrint.setContent(AppData.tickets[this.data.value])
         document.getElementById("ic_ticketContainer").innerHTML=``
         ic_historyNav.render(document.getElementById("printNav"))
         ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
@@ -1499,8 +1497,9 @@ let ic_historyPrint={
     ic_htmlTemplate: function(){
         let d= new Date()
         return`
-            <div class="ticketHead p-4" dir="${dir()}">
-                <div class="flex w-[85%] m-auto mb-4 gap-[5%]">
+            <div class="ticketHead m-4 relative" dir="${dir()}">
+
+                <div class="flex w-[85%] m-auto mb-4 gap-[5%] items-center">
                     <div class="logo w-[6rem] flex items-center">
                         <img src="${this.data.logo}">
                     </div>
@@ -1516,9 +1515,7 @@ let ic_historyPrint={
             </div>
         
             <div id="ic_contentContainer" dir="${dir()}"></div>
-                <div id="ticketFoot" class="">
-
-                </div>
+            <div id="ticketFoot" class=""></div>
         `
     },
     
@@ -1591,7 +1588,6 @@ let ic_settingsNav={
         this.container.parentElement.classList.add("hidden");
         document.getElementById("calculator").classList.remove("hidden");
         setScreenHeight()
-        ic_total.render(ic_total.container)
     },
 
     ic_html: function(){
@@ -1734,29 +1730,35 @@ let ic_TicketSett={
 
     OnchangeLogo:function(elem){
 
+        if((elem.files[0].size/1048576)<2){
             let gg= new FileReader();
             gg.readAsDataURL(elem.files[0])
     
             gg.onload=()=>{
-                let url= gg.result;
-                this.container.querySelector("#logoPreview img").src= url
-                this.data.logo= url
-                AppConfig.Ticket.logo= url
+                let uri= gg.result;
+                this.container.querySelector("#logoPreview img").src= uri
+                this.data.logo= uri
+                AppConfig.Ticket.logo= uri
                 updateConfig()
             }
+        }    
     },
 
     OnchangeQr: function(elem){
 
-        let gg= new FileReader();
-        gg.readAsDataURL(elem.files[0])
+        if((elem.files[0].size/1048576)<2){
 
-        gg.onload=()=>{
-            let url= gg.result;
-            this.container.querySelector("#qrPreview img").src= url
-            this.data.Qr= url
-            AppConfig.Ticket.qrCode= url
-            updateConfig()
+            let gg= new FileReader();
+            gg.readAsDataURL(elem.files[0])
+
+            gg.onload=()=>{
+                let uri= gg.result;
+                this.container.querySelector("#qrPreview img").src= uri
+                this.data.Qr= uri
+                console.log(uri)
+                AppConfig.Ticket.qrCode= uri
+                updateConfig()
+            }
         }
     },
 
@@ -1802,29 +1804,17 @@ let ic_TicketSett={
             <div class="flex mt-4">
                 <label for="logo" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
                     <div class="w-fit text1">${t("logo")}:</div>
-                    <div id="logoPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src="${this.data.logo}"></div>
+                    <div id="logoPreview" class="w-[50%] mt-4 aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src="${this.data.logo}"></div>
                 </label>
-                <input type="file" title=" " id="logo" class="block hidden w-full m-auto text-sm text-black
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-violet-50 file:text-gray-700
-                hover:file:bg-violet-100
-                " onchange="ic_TicketSett.OnchangeLogo(this)" accept="image/*"/>
+                <input type="file" title=" " id="logo" class="hidden" onchange="ic_TicketSett.OnchangeLogo(this)" accept="image/*"/>
 
 
                 <label for="qr" class="flex flex-col items-center justify-evenly mt-4 mb-4 w-[50%]">
                     <div class="w-fit text1">${t("qr")}:</div>
-                    <div id="qrPreview" class="w-[50%] aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src=${this.data.Qr}></div>
+                    <div id="qrPreview" class="w-[50%] mt-4 aspect-square border bg-white flex items-center justify-center text-2xl text-gray-400"><img src=${this.data.Qr}></div>
                 </label>
 
-                <input type="file" title=" " id="qr" class="block hidden w-full m-auto text-sm text-black
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-violet-50 file:text-gray-700
-                hover:file:bg-violet-100
-                " onchange="ic_TicketSett.OnchangeQr(this)" accept="image/*"/>
+                <input type="file" title=" " id="qr" class="hidden" onchange="ic_TicketSett.OnchangeQr(this)" accept="image/*"/>
             </div> 
         </div>
         `
@@ -1880,7 +1870,7 @@ ic_languageSett={
         return`
         <div dir="${dir()}">
             <div class="text4 mt-6">${t("language")}</div>
-            <div class="flex justify-evenly">
+            <div class="flex justify-evenly mt-4" dir="ltr">
                 <div>
                     <input id="arabic" type="radio" value="AR" name="langue" onchange="ic_languageSett.OnchangeEvent()" ${this.state.arabic}>
                     <label for="arabic">${t("arabic")}</label>
@@ -1901,7 +1891,7 @@ ic_languageSett={
 
 
 
-let ic_carnetIco={ 
+let ic_CreditIco={ 
 
     container: null,
 
@@ -1912,14 +1902,240 @@ let ic_carnetIco={
 
 
     OnclickEvent: function(){
+        let calcScreen= document.getElementById("calculator")
+        let creditScreen= document.getElementById("credit")
+        calcScreen.classList.add("hidden");
+        creditScreen.classList.remove("hidden");
+        ic_CarnetNav.render(document.getElementById("creditNav"))
 
+        Credit.getElements()
+        Credit.data.elements.forEach(e=>{
+            e.render(document.getElementById("creditBody"))
+        })
     },
 
 
     ic_html:function(){
         return `
-        <div onclick="ic_carnetIco.OnclickEvent()" class="hidden">
-            <img id="settingsIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/Carnet.png">
+        <div onclick="ic_CreditIco.OnclickEvent()" class="">
+            <img id="creditIco" class="span-1 h-[70%] ml-auto mr-auto" src="Ressources/Imgs/Carnet.png">
+        </div>
+        `
+    }
+}
+
+
+let ic_CarnetNav={
+    container: null,
+    data:{},
+    state:{},
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()   
+    },
+
+    return: function(){
+        this.container.parentElement.classList.add("hidden");
+        document.getElementById("calculator").classList.remove("hidden");
+        setScreenHeight()
+        document.getElementById("creditBody").innerHTML=``
+    },
+
+    ic_html: function(){
+        return` 
+        
+        <div id="settingsNav" class="flex justify-between border-b-2 border-gray-400 w-full items-center pl-4 pr-4 sticky top-0 bg-white z-20 aspect-[9/1]">
+            <div class="return" onclick="ic_CarnetNav.return()">
+                &#8592; ${t("return")} 
+            </div>
+        </div>
+
+        `
+    },
+}
+
+
+
+class CreditElements{
+    constructor(personne){
+        this.container= null;
+        this.data={
+            name: personne.name,
+            tel: personne.Tel,
+            tickets: personne.tickets,
+        }
+
+    };
+
+
+    render= function(target){
+        this.container= target;
+        this.container.innerHTML+= this.ic_html()
+    };
+
+
+    OnCloseClick= function(){
+        Credit.refreshElements(this.data.name)
+    }
+
+
+    ic_html=function(){
+        let ticket=this.data.tickets[0];
+        return`
+        <div class="border mb-4 mt-4" dir="${dir()}">
+            <div class="p-4 flex flex-col gap-2">
+                <div dir="rtl"><div class="w-fit text1" onclick="Credit.data.elements.filter(e=> e.data.name== '${this.data.name}')[0].OnCloseClick()">╳</div></div>
+                <div class="flex gap-[10%]">
+                    <div class="text1 w-[50%]"><strong>${t("name")}:</strong> ${this.data.name}</div>
+                    <div class="text-gray-400 text1 w-[50%]">#${(ticket.ticketId).toFixed().padStart(7,0)}</div>
+                </div>
+                <div class="flex gap-[10%] text1">
+                    <div class="w-[50%]"><strong>${t("telNum")}:</strong> <div>${this.data.tel}</div></div>
+                    <div class="w-[50%]"><strong>${t("date")}:</strong> <div>${ticket.date}</div></div>
+                </div>
+
+                <div class="flex gap-[10%] text1">
+                    <div class="w-[50%]"><strong>${t("articles")}:</strong> <div>${ticket.count}</div></div>
+                    <div class="w-[50%]"><strong>${t("ammount")}:</strong> <div>${ticket.totalTicket.toFixed(3)} Dt</div></div>
+
+                </div>
+
+
+            </div>
+            
+            <div class="flex justify-center h-[3rem] text1">
+                <div class="border w-[50%] flex justify-center items-center">
+                    <a href="tel:${this.data.tel}">${t("call")}</a>
+                </div>
+
+                <div class="border w-[50%] flex justify-center items-center">
+                    <a href="sms:${this.data.tel}?&body=Bonjour monsieur, vous avez un credit de ${ticket.totalTicket.toFixed(3)} Dt, mis le ${ticket.date}, sous le numéro #${(ticket.ticketId).toFixed().padStart(7,0)}, ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
+                </div>
+            </div>
+        </div>
+        `
+    }
+}
+
+
+let Credit={
+
+    data:{
+        elements:[]
+    },
+
+    getElements: function(){
+        this.data.elements=[]
+        for (let el in AppData.credit){
+            this.data.elements.unshift(new CreditElements(AppData.credit[el]))
+        }
+    },
+
+    refreshElements: function(cName){
+        this.data.elements= this.data.elements.filter(e=> e.data.name!= cName)
+        delete AppData.credit[cName]
+        updateData();
+        document.getElementById("creditBody").innerHTML=``
+        Credit.data.elements.forEach(e=>{
+            e.render(document.getElementById("creditBody"))
+        })
+    }
+}
+
+
+
+
+
+
+let ic_addCarnetIco={
+    container: null,
+    data:{},
+    state:{},
+
+    render:function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnclickEvent:function(){
+        ic_addCarnetPopup.render(document.getElementById("popUpContainer"))
+        document.getElementById("popUpContainer").classList.remove("hidden")
+    },
+
+    hide:function(){
+        this.container.classList.add("grayscale")
+        this.container.children[0].removeAttribute("onclick")
+    },
+
+    ic_html:function(){
+        return`
+        <div class="rounded-full border w-[10%] aspect-square bg-sky-300 flex justify-center items-center" onclick="ic_addCarnetIco.OnclickEvent()">
+            <img id="settingsIco" class="h-[60%]" src="Ressources/Imgs/Carnet.png">
+        </div>
+        `
+    }
+}
+
+let ic_addCarnetPopup={
+    container: null,
+    data:{},
+    state:{},
+
+    render:function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()
+    },
+
+
+    OnCloseClickEvent: function(){
+        this.container.innerHTML= ``
+        this.container.classList.add("hidden")
+    },
+
+
+    OnAddClickEvent:function(){
+
+        let name= this.container.querySelector("#clientName").value
+        let number= this.container.querySelector("#TelNum").value
+
+        AppData.credit[name]={
+            "name": name,
+            "Tel": number,
+            "tickets": [ic_Print.data.ticketContent[0]]
+        }
+  
+
+        updateData();
+        this.container.innerHTML= ``
+        this.container.classList.add("hidden")
+        ic_addCarnetIco.hide();
+    }
+    ,
+
+
+    ic_html:function(){
+        return`
+        <div id="addCarnetPopup" class="border border-black flex justify-center h-full items-center bg-gray-700/80" dir="${dir()}">
+            <div class="w-[80%] max-w-[400px] p-4 border h-fit flex flex-col gap-[15px] bg-gray-200 ">
+                <div dir="${dir()}" class="flex flex-row-reverse"><div class="w-fit" onclick="ic_addCarnetPopup.OnCloseClickEvent()">╳</div></div>
+                <div class="text4">${t("addToCredit")}</div>
+
+                <div class="flex gap-[10%] justify-between">
+                    <label for="clientName" class="text1 flex items-center">${t("clientName")}:</label>
+                    <input type="text" id="clientName" class="flex-1 text1 max-w-[60%]" required/>                
+                </div>
+
+                <div class="flex gap-[10%] justify-between">
+                    <label for="TelNum" class="text1 flex items-center">${t("telNum")}:</label>
+                <input type="number" id="TelNum" class="flex-1 max-w-[60%]  text1"/>                
+            </div>
+
+            <div class=" flex justify-center">
+                <div class="pointer-events-auto rounded-md bg-sky-500 px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white hover:bg-indigo-500" onclick="ic_addCarnetPopup.OnAddClickEvent()">${t("add")}</div>
+            </div>
+            
+            </div>
         </div>
         `
     }
