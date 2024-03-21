@@ -10,7 +10,7 @@
     <link rel="manifest" href="manifest.json">
     <title>Yumurta Calculator Lite</title>
 
-    <style>
+       <style>
         /* width */
         ::-webkit-scrollbar {
           width: 5px;
@@ -53,7 +53,7 @@
         }
 
         .text5{
-          font-size: clamp(1.5rem, 1rem + 4.333333vw, 2.75rem);   
+          font-size: clamp(1.5rem, -1rem + 12.333333vh, 6.75rem);   
         }
         </style>
 
@@ -86,10 +86,10 @@
     
 
 
-    <div id="print" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-hidden">
+    <div id="print" class=" flex flex-col border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] hidden overflow-hidden">
         <div id="printNav"></div>
-        <div id="ic_ticketContainer" class="overflow-auto"></div>
-
+        <div id="ic_ticketContainer" class="flex-1 overflow-auto"></div>
+        <div id="functionBar" class="aspect-[6/1]"></div>
     </div>
 
 
