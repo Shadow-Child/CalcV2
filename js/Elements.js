@@ -170,10 +170,10 @@ let ic_totalZoom={
 
     ic_html: function(){
         return`
-        <div id="totalZoom" class="border border-black flex justify-center h-full items-center bg-gray-700/80" onclick="ic_totalZoom.OnclickEvent()">
-            <div class="w-[80%] border max-w-[400px] h-[20%] flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
-                <div class="text4">TOTAL</div>
-                <div class="text5 font-extrabold">${(this.data.value).toFixed(3)} ${t("curr")}</div>
+        <div id="totalZoom" class="relative border border-black flex justify-center h-full items-center bg-black/85" onclick="ic_totalZoom.OnclickEvent()">
+            <div id="zoomBox" class="absolute w-[70vh] border h-[25%] rotate-90 flex flex-col justify-evenly items-center bg-gray-200 rounded-full">
+                <div class="text5 flex font-bold">${(this.data.value).toFixed(3)} <div class="text2">${t("curr")}</div></div>
+                <div class="text3">${0+ic_Display.data.count} ${t("articles")} </div>
             </div>
         </div>
         `
@@ -196,39 +196,32 @@ let ic_nextBtn={
         let priceState= actualEdit?.price.state;
         let articleState= actualEdit?.quantity.state;
 
-        if(ic_Display.state.data== "EMPTY"){ //IF "NEXT" IS PRESSED WHILE THE SCREEN IS EMPTY THE OPENING TIME WILL BE SET
-            
-            ic_Display.setOpenTime()
-            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
-            ic_Display.addArticle();
-            ic_Display.setState("NOT-EMPTY");
-        }
+
 
         if(actualEdit== undefined ){
-            let notValid= ic_Display.data.articles.filter(el=> el.valid== "NO"); //LOOKS FOR INVALID ARTICLES
-            if (notValid.length != 0) { //IF THERE IS AN INVALID ARTICLE, ITS STATE WILL CHANGE TO "FOCUSED" IT IT WILL START EDITING
-                notValid[0].editPrice();
-            } else{
-
-                ic_Display.addArticle();
-                ic_Display.setState("NOT-EMPTY");
-            }
+            ic_Display.addArticle();
+            ic_Display.setState("NOT-EMPTY");
         }
 
         else if (actualEdit.state== "FOCUSED" && priceState== "FOCUSED" && actualEdit.price.numeric !=0 && actualEdit.price.value != "." && actualEdit.price.value != "" ){
             // IF AN ARTICLE IS "FOCUSED" AND IT'S PRICE IS "FOCUSED" AND THE PRICE VALUE IS VALID, PRICE WILL BE BLUR AND QUANTITY WILL BE "FOCUSED"
             actualEdit.editQuantity();
             actualEdit.calcTotal();
-
-            ic_Display.calcTicketTotal();    
+            ic_Display.data.articles.filter(el=> el.state=="FOCUSED")[0].valid="YES"
+            ic_Display.calcTicketTotal()
+   
             ic_total.render(document.getElementById("ic_totalContainer"));
             ic_total.swipeDownDetect()
-            
+
+            ic_Display.refreshArticlesIndicator();
+
         }
         else if( actualEdit.state== "FOCUSED" && articleState== "FOCUSED" && actualEdit.quantity.numeric !=0 ){
             // IF AN ARTICLE IS "FOCUSED" AND IT'S QUANTITY IS "FOCUSED" AND THE PRICE VALUE IS VALID, THE ARTICLE WILL BECOME VALID AND IT WILL LOSE FOCUS
             actualEdit.valid= "YES";
             actualEdit.stopEdit();
+            actualEdit.render()
+            actualEdit.renderIndicator()
             actualEdit.calcTotal();
             ic_Display.calcTicketTotal();    
             ic_total.render(document.getElementById("ic_totalContainer"));
@@ -237,7 +230,8 @@ let ic_nextBtn={
             let notValid= ic_Display.data.articles.filter(el=> el.valid== "NO");
             if (notValid.length != 0) {
             //IF AN INVALID ARTICLE IS LEFT BEHIND, IT WILL BE FOCUSED NEXT
-                notValid[0].editPrice();
+                notValid[0].state= "FOCUSED"
+                notValid[0].price.state= "FOCUSED"
             } else{
             //IF THERE IS NO INVALID ARTICLES A NEW ARTICLE BOX WILL BE ADDED
             ic_Display.addArticle();
@@ -249,7 +243,7 @@ let ic_nextBtn={
             ic_Display.addArticle();
         }
     
-        ic_Display.refreshArticlesIndicator();
+
     },
 
     ic_html: function(){
@@ -363,7 +357,8 @@ class newArticle{
 
     ic_boxHtml= function(){
         return `
-        <div id="A-${this.id}" class="Article flex aspect-[8/1] w-full border-t border-l border-1 border-black border-dashed font-bold ml-0 transition[margin-left] ease-in-out duration-300">
+        <div id="A-${this.id}"  class="h-fit ml-0 transition[margin-left] ease-in-out duration-300">
+            <div class="w-full h-[5px] bg-green-200"></div>
         </div>
         `
     }  
@@ -371,23 +366,23 @@ class newArticle{
     ic_contentHtml= function(){
         return`
     
-    
-                <div class="close flex-[1_0_0%] border-r border-dashed border-black flex justify-center items-center text4 bg-gray-100" onclick="event.stopPropagation(); ic_Display.data.articles.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
-                <div id="Article-Info"  class="${this.state} flex flex-[7_0_0%] h-full items-center">
+            <div class="Article flex h-fit aspect-[8/1] w-full border-t border-l border-1 border-black border-dashed font-bold">
+                <div class="close flex-[1_0_0%] aspect-square h-full border-r border-dashed border-black flex justify-center items-center text4 bg-gray-100" onclick="event.stopPropagation(); ic_Display.data.articles.filter(el=> el.id==${this.id})[0].deleteArticle();">x</div>
+                <div id="Article-Info"  class="${this.state}  flex flex-[7_0_0%]  items-center">
                     
                     <div id="price-box" class="${this.price.state} flex w-[50%] justify-end h-fit items-end" onclick="ic_Display.data.articles.filter(el=> el.id==${this.id})[0].editPrice(); event.stopPropagation();">
                         <div class="dinars-box text2 leading-none">0</div>
                         
                         <div class="coma text3 leading-none">,</div>
                             <div class="flex flex-col relative">
-                                <div class="currency leading-none text1">${t("curr")}</div>
+                                <div class="currency leading-none text1 absolute bottom-[90%]">${t("curr")}</div>
                                 <div class="millimes-box text3 leading-none">000</div>
                             </div>
     
                     </div>
                 
                 
-                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-full items-end justify-evenly  " onclick="ic_Display.data.articles.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
+                    <div id="quantity-box" class="${this.quantity.state} flex flex-[2_7_0%] h-fit items-end justify-evenly  " onclick="ic_Display.data.articles.filter(el=> el.id==${this.id})[0].editQuantity(); event.stopPropagation();">
     
                         <div class="multiply text-lg h-full flex items-end">x</div>
                         <div class="quantity text2 leading-none">22</div>
@@ -395,6 +390,7 @@ class newArticle{
                     </div>
                     <div class="number flex-[1_7_0%] h-full flex justify-center items-center border-dashed border-l border-black text-gray-500 text-xl">&#9664</div>
                 </div>
+            </div>
 
             <style>
 
@@ -415,6 +411,7 @@ class newArticle{
         `
     }
 
+
     createArticleBox= function(){
 
         if(ic_Display.state.data== "EMPTY"){
@@ -424,7 +421,6 @@ class newArticle{
         let t= document.createElement("template");
         t.innerHTML= this.ic_boxHtml();
         this.container.insertBefore(t.content, this.container.children[0]);
-        this.render();
         this.swipeLeftDetect()
     };
 
@@ -436,8 +432,8 @@ class newArticle{
 
     renderPrice= function(){
         let article = document.getElementById(`A-${this.id}`)
-        let activeDinars= article.children[1].children[0].children[0];
-        let activeMillim = article.children[1].children[0].children[2].children[1];
+        let activeDinars= article.querySelector(".dinars-box")
+        let activeMillim = article.querySelector(".millimes-box")
         let value=  this.price.value;
         this.price.numeric= parseFloat(value)
 
@@ -457,14 +453,16 @@ class newArticle{
             activeMillim.classList.remove("text4")
             activeMillim.classList.add("text3")
         }
+        this.renderIndicator();
     };
 
     renderQuantity= function(){
         let article= document.getElementById(`A-${this.id}`)
-        let quantityText= article.children[1].children[1].children[1];
+        let quantityText= article.querySelector(".quantity");
 
         this.quantity.numeric= parseFloat(this.quantity.value);
         quantityText.innerHTML= this.quantity.value.padStart(2,0)
+        this.renderIndicator();
     };
 
     deleteArticle= function(){
@@ -538,6 +536,8 @@ class newArticle{
         this.quantity.state= "BLUR";
 
         this.render()
+        //ic_Display.refreshArticlesIndicator();
+
     };
 
     editQuantity= function(){
@@ -553,21 +553,30 @@ class newArticle{
         this.quantity.mode= "REPLACE"
 
         this.render()
+        //ic_Display.refreshArticlesIndicator();
+        this.renderIndicator();
     };
 
     stopEdit= function(){
         this.calcTotal();
         ic_total.render(document.getElementById("ic_totalContainer"));
         ic_total.swipeDownDetect()
-
+        let prev= ic_Display.data.articles.filter(e=> e.state== "FOCUSED")[0]
         this.state="BLUR";
         this.price.state= "BLUR";
         this.price.mode= "REPLACE"
         this.quantity.state= "BLUR";
         this.quantity.mode= "REPLACE"
+
+        if(prev.valid== "YES"){
+            this.render()
+        }
         
-        this.render()
-        this.renderIndicator();
+        prev.calcTotal();
+        ic_Display.calcTicketTotal()
+        
+        //ic_Display.refreshArticlesIndicator();
+
     }
 
     calcTotal= function(){
@@ -577,7 +586,7 @@ class newArticle{
     renderIndicator= function(){
 
         this.indicator= ic_Display.data.articles.indexOf(ic_Display.data.articles.filter(el=> el.id== this.id)[0])+1;
-        document.getElementById(`A-${this.id}`).children[1].children[2].innerHTML= this.indicator;
+        document.getElementById(`A-${this.id}`).querySelector(".number").innerHTML= this.indicator;
     };
 
     setValue= function(path, number) { //SETS THE VALUE OF QUANTITY OR PRICE DEPENDING ON STATE AND MODE
@@ -614,7 +623,8 @@ let ic_Display={
     addArticle: function(){
         this.data.articles.push(new newArticle(counter, document.getElementById("Articles")))
         this.data.articles.filter(el=> el.id== counter)[0].createArticleBox();
-        counter+= 1;
+        //this.data.articles.filter(el=> el.id== counter)[0].render();
+        //counter+= 1;
 
     },
 
@@ -732,7 +742,7 @@ let ic_Display={
             this.addArticle()
             this.setState("NOT-EMPTY");
         }else{ //IF THE SCREEN IS CLICKED WHILE "NOT-EMPTY", THE CURRENT EDITING TEXT WILL LOSE FOCUS AN THE TOTAL WILL BE REFRESHED
-            actualEdit?.stopEdit()
+            //actualEdit?.stopEdit()
     
             this.calcTicketTotal();
             ic_total.render(document.getElementById("ic_totalContainer"));
@@ -836,12 +846,30 @@ class ic_numBtn {
             if(ic_Display.state.data== "EMPTY"){ 
                 //IF A NUMBER IS CLICKED WHILE THERE IS NO ARTICLE IN FOCUSED IT ADDS A NEW ARTICLE AND THE TICKET IS NO LONGER "EMPTY"
                 ic_Display.addArticle()
+
+                ic_Display.data.articles.filter(el=> el.id== counter)[0].render();
+                counter+= 1;
+
                 ic_Display.setOpenTime()
-            ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
+                ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
         
                 ic_Display.state.data= "NOT-EMPTY"
+
             }else if(ic_Display.state.data== "NOT-EMPTY" && ic_Display.data.articles.filter(el=> el.state=="FOCUSED").length==0 && ic_Display.data.articles.filter(el=> el.valid== "NO").length==0){
+                
                 ic_Display.addArticle()
+                counter+= 1;
+
+                ic_Display.data.articles.filter(el=> el.id== counter)[0].render();
+
+                
+
+            } else if(ic_Display.state.data== "NOT-EMPTY" && ic_Display.data.articles.filter(el=> el.state=="FOCUSED").length!=0){
+                ic_Display.data.articles.filter(el=> el.state=="FOCUSED")[0].render();
+                counter+= 1;
+                ic_Display.data.articles.filter(el=> el.state=="FOCUSED")[0].valid="YES"
+
+                //ic_Display.refreshArticlesIndicator();
             }
         
         
@@ -967,7 +995,7 @@ let ic_validate={
     
         })
     
-        dailyTickets.push({ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
+        ic_Print.setContent([{ //PUSHES A NEW JSON CONTAINING THE TICKET DATA TO THE ARRAY HOLDIN TODAY'S TOCKETS
             "content":          articlesData,
             "timeOpen":         ic_Display.data.openTime,
             "timeClose":        ic_Display.data.closeTime,
@@ -975,21 +1003,11 @@ let ic_validate={
             "ticketId":         ic_Display.data.ticketId,
             "count":            ic_Display.data.count,
             "date":             ic_Display.data.date
-    })
+    }])
     
-        ic_Display.data.articles.forEach(el=>{el.deleteArticle()})
-        AppData.tickets[`${ic_Display.data.date}`]= dailyTickets;
-        updateData();
-        AppConfig.Ticket.ticketId+=1;
-        updateConfig();
-        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
-        ic_Display.data.closeTime= null;
-        ic_Display.setTicketId();
-        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
-        //fillTicket();
         ic_printNav.render(document.getElementById("printNav"))
-        ic_Print.setContent([dailyTickets[dailyTickets.length-1]])
         ic_Print.render(document.getElementById("ic_ticketContainer"));
+        ic_printFunBar.render(document.getElementById("functionBar"))
         goToPrintScreen();
     }},
 
@@ -1066,8 +1084,6 @@ let ic_Print={
         t.innerHTML= this.ic_htmlTemplate()
         t.content.getElementById("ic_contentContainer").innerHTML= this.renderContent();
         this.container.appendChild(t.content)
-        ic_addCarnetIco.render(document.getElementById("addCarnetContainer"))
-
     },
     
 
@@ -1208,17 +1224,11 @@ let ic_printNav={
         this.container.parentElement.classList.add("hidden");
         document.getElementById("calculator").classList.remove("hidden");
 
-        this.container.parentElement.innerHTML=`
-            <div id="printNav"></div>
-            <div id="ic_ticketContainer" class="overflow-auto"></div>
-        `
-        setScreenHeight()
-    },
+        this.container.innerHTML=``
+        document.getElementById("ic_ticketContainer").innerHTML=``
+        document.getElementById("functionBar").innerHTML=``
 
-    OnPrintClick: function(){
-        this.container.classList.add("hidden")
-        window.print();
-        this.container.classList.remove("hidden")
+        setScreenHeight()
     },
 
     ic_html: function(){
@@ -1229,13 +1239,61 @@ let ic_printNav={
                 &#8592; ${t("return")} 
             </div>
             <div id="ic_dateFilterContainer" class="border"></div>
-            <div class="printBtn" onclick="ic_printNav.OnPrintClick()">
-            ${t("print")} &#8594;
-            </div>
         </div>
 
         `
     },
+}
+
+
+
+let ic_printFunBar={
+    container: null,
+    data:{},
+    state:{},
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    OnValidClick:function(){
+        dailyTickets.unshift(ic_Print.data.ticketContent[0])
+        ic_Display.data.articles.forEach(el=>{el.deleteArticle()})
+        AppData.tickets[`${ic_Display.data.date}`]= dailyTickets;
+        AppConfig.Ticket.ticketId+=1;
+        ic_Display.setTicketId();
+        updateData();
+        updateConfig();
+        ic_Display.data.closeTime= null;
+        ic_CalculatorInfoBar.render(ic_CalculatorInfoBar.container)
+        ic_printNav.OnReturnClick()
+    },
+
+    OnCreditClick:function(){
+        ic_addCarnetPopup.render(document.getElementById("popUpContainer"))
+        document.getElementById("popUpContainer").classList.remove("hidden")
+    },
+
+    OnPrintClick: function(){
+        this.container.classList.add("hidden")
+        ic_printNav.container.classList.add("hidden")
+        window.print();
+        ic_printNav.container.classList.remove("hidden")
+        this.container.classList.remove("hidden")
+        this.OnValidClick()
+    },
+
+    ic_html: function(){
+        return`
+        <div class="bg-sky-50 flex border h-full">
+            <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnValidClick()">Terminer</div>
+            <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnCreditClick()">Credit</div>
+            <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnPrintClick()">${t("print")}</div>
+        </div>
+        `
+    },
+
 }
 
 
@@ -1261,6 +1319,7 @@ let ic_historyIco={
         ic_dateFilter.getOptions()
         ic_dateFilter.render(document.getElementById("ic_dateFilterContainer"))
         goToPrintScreen();
+        //ic_printFunBar.render(document.getElementById("functionBar"))
     },
 
 
@@ -1289,10 +1348,8 @@ let ic_historyNav={
         this.container.parentElement.classList.add("hidden");
         document.getElementById("calculator").classList.remove("hidden");
 
-        this.container.parentElement.innerHTML=`
-            <div id="printNav"></div>
-            <div id="ic_ticketContainer" class="overflow-auto"></div>
-        `
+        this.container.innerHTML=``
+        document.getElementById("ic_ticketContainer").innerHTML=``
         setScreenHeight()
     },
 
@@ -1755,7 +1812,6 @@ let ic_TicketSett={
                 let uri= gg.result;
                 this.container.querySelector("#qrPreview img").src= uri
                 this.data.Qr= uri
-                console.log(uri)
                 AppConfig.Ticket.qrCode= uri
                 updateConfig()
             }
@@ -2010,7 +2066,7 @@ class CreditElements{
                 </div>
 
                 <div class="border w-[50%] flex justify-center items-center">
-                    <a href="sms:${this.data.tel}?&body=Bonjour monsieur, vous avez un credit de ${ticket.totalTicket.toFixed(3)} Dt, mis le ${ticket.date}, sous le numéro #${(ticket.ticketId).toFixed().padStart(7,0)}, ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
+                    <a href="sms:${this.data.tel}?&body=Mr ${this.data.name}, votre credit ${ticket.totalTicket.toFixed(3)} Dt, mis le ${ticket.date}, sous le numéro #${(ticket.ticketId).toFixed().padStart(7,0)}, ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
                 </div>
             </div>
         </div>
@@ -2044,39 +2100,6 @@ let Credit={
 }
 
 
-
-
-
-
-let ic_addCarnetIco={
-    container: null,
-    data:{},
-    state:{},
-
-    render:function(target){
-        this.container= target;
-        this.container.innerHTML= this.ic_html();
-    },
-
-    OnclickEvent:function(){
-        ic_addCarnetPopup.render(document.getElementById("popUpContainer"))
-        document.getElementById("popUpContainer").classList.remove("hidden")
-    },
-
-    hide:function(){
-        this.container.classList.add("grayscale")
-        this.container.children[0].removeAttribute("onclick")
-    },
-
-    ic_html:function(){
-        return`
-        <div class="rounded-full border w-[10%] aspect-square bg-sky-300 flex justify-center items-center" onclick="ic_addCarnetIco.OnclickEvent()">
-            <img id="settingsIco" class="h-[60%]" src="Ressources/Imgs/Carnet.png">
-        </div>
-        `
-    }
-}
-
 let ic_addCarnetPopup={
     container: null,
     data:{},
@@ -2109,7 +2132,6 @@ let ic_addCarnetPopup={
         updateData();
         this.container.innerHTML= ``
         this.container.classList.add("hidden")
-        ic_addCarnetIco.hide();
     }
     ,
 
