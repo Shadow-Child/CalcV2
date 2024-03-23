@@ -36,6 +36,19 @@
           opacity: 1
         }
 
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+
         .text1{
             font-size: clamp(0.5rem, -0.325rem + 6.333333vw, 1rem); 
         }
@@ -53,7 +66,11 @@
         }
 
         .text5{
-          font-size: clamp(1.5rem, -1rem + 12.333333vh, 6.75rem);   
+          font-size: clamp(1.5rem, 2rem + 15.333333vh, 8.75rem);   
+        }
+
+        .text6{
+          font-size: clamp(1.5rem, -2rem + 12.333333vh, 6.75rem);   
         }
         </style>
 
@@ -61,7 +78,7 @@
 
 <body class="flex justify-center h-dvh overflow-hidden select-none touch-manipulation">
     <div id="calculator" class="relative bg-gradient-to-t from-gray-300 to-gray-400 border border-gray-700 h-svh w-full max-w-[55vh] min-w-[30vh] font-['Azeret_Mono'] flex flex-col">
-        <div class="absolute bottom-1 left-1 text-xs text-gray-500">V.21/03/2024</div>
+        <div class="absolute bottom-1 left-1 text-xs text-gray-500">V.23/03/2024</div>
 
         <div id="ic_screenContainer" class="h-fit"></div>
         <!--div id="ic_keyboardContainer"></div-->
@@ -112,6 +129,9 @@
 
     <div id="credit" class="border border-gray-700 h-dvh w-full max-w-[55vh] min-w-[30vh] flex flex-col font-['Azeret_Mono'] overflow-hidden hidden">
       <div id="creditNav"></div>
+
+      <div id="creditToolBar" class="aspect-[7/1] p-6"></div>
+
       <div id="creditBody" class="p-6 overflow-auto"></div>
     </div>
 
