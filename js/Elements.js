@@ -2271,7 +2271,7 @@ let ic_creditToolBar={
                 <label for="searchCredit">${t("search")}:</label>
                 <input class="outline outline-1 pl-2 pr-2 w-fit" id="searchCredit" type="text" placeholder="${t("clientName")}" oninput="ic_creditToolBar.OnchangeEvent()"/>  
             </div>
-            <div class="justify-center w-[100px]">
+            <div class="justify-center">
                 <div class="p-4 bg-sky-300 text-white w-fit m-auto " onclick="ic_creditToolBar.OnAddClick()">+ ${t("addClient")} </div>
             </div>
         </div>
