@@ -2062,6 +2062,7 @@ class CreditElements{
             name: personne.name,
             tel: personne.Tel,
             tickets: personne.tickets,
+            date: personne.dateCreation,
             total: 0
         }
 
@@ -2111,7 +2112,7 @@ class CreditElements{
                 </div>
 
                 <div class="border w-[50%] flex justify-center items-center">
-                    <a href="sms:${this.data.tel}?&body=Mr ${this.data.name}, votre credit ${ticket?.totalTicket?.toFixed(3)} Dt, mis le ${ticket?.date}, sous le numéro #${(ticket?.ticketId)?.toFixed().padStart(7,0)}, ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
+                    <a href="sms:${this.data.tel}?&body=Mr ${this.data.name}, votre credit crée le ${this.data.date} est maintenant de ${this.data.total.toFixed(3)} Dt,Avec un total de (${ticket.length}) Ticket(s), ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
                 </div>
             </div>
         </div>
@@ -2270,7 +2271,7 @@ let ic_creditToolBar={
                 <label for="searchCredit">${t("search")}:</label>
                 <input class="outline outline-1 pl-2 pr-2 w-fit" id="searchCredit" type="text" placeholder="${t("clientName")}" oninput="ic_creditToolBar.OnchangeEvent()"/>  
             </div>
-            <div class="justify-center w-full">
+            <div class="justify-center w-[100px]">
                 <div class="p-4 bg-sky-300 text-white w-fit m-auto " onclick="ic_creditToolBar.OnAddClick()">+ ${t("addClient")} </div>
             </div>
         </div>
@@ -2302,13 +2303,18 @@ let ic_addClientPopup={
 
         let name= this.container.querySelector("#clientName").value
         let number= this.container.querySelector("#TelNum").value
-
+        let date= new Date()
+        let d= date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear()
+        console.log(d)
         AppData.credit[name]={
             "name": name,
             "Tel": number,
             "tickets": [],
+            "dateCreation": d
 
         }
+
+        console.log(d)
   
 
         updateData();
