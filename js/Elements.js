@@ -1409,9 +1409,6 @@ let ic_historyNav={
                 &#8592; ${t("return")} 
             </div>
             <div id="ic_dateFilterContainer" class="border border-2 border-sky-500 rounded w-[40%]"></div>
-            <div class="printBtn" onclick="ic_historyNav.OnPrintClick()">
-            ${t("print")} &#8594;
-            </div>
         </div>
 
         `
