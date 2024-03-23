@@ -32,8 +32,6 @@ window.onload =  (event) => {
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
     ic_total.swipeDownDetect()
-    //ic_total.OnclickEvent()
-    ic_historyIco.OnclickEvent()
 
 }
 
