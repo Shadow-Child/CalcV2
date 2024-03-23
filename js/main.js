@@ -32,8 +32,8 @@ window.onload =  (event) => {
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
     ic_total.swipeDownDetect()
-
-    //ic_historyIco.OnclickEvent()
+    //ic_total.OnclickEvent()
+    ic_historyIco.OnclickEvent()
 
 }
 
@@ -163,7 +163,7 @@ let languages={
         total:"Total",
         quantity:"Qté",
         date:"Date",
-        ticketsNbr:"Nombre de Tickets",
+        ticketsNbr:"Nbr Tickets",
         dailySales:"Chiffre de jour",
         ticket:"Ticket",
         storeName:"Nom du Store",
@@ -184,6 +184,11 @@ let languages={
         ammount:"Montant",
         call:"Appeler",
         sendSMS: "Envoyer SMS",
+        selectClient: "Choisir un client",
+        credit:"Credit",
+        done:"Terminer", 
+        search:"Chercher",
+        addClient: "Ajouter un Client",
     },
 
     AR:{
@@ -216,6 +221,11 @@ let languages={
         ammount:"مبلغ الدين",
         call:"اتصال",
         sendSMS: "أرسل SMS",
+        selectClient: "اختر حريفا",
+        credit:"دين",
+        done:"انتهاء",
+        search:"بحث",
+        addClient: "إضافة حريف",
     }
 }
 
