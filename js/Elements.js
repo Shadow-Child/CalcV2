@@ -1014,7 +1014,7 @@ let ic_validate={
     
         ic_printNav.render(document.getElementById("printNav"))
         ic_Print.render(document.getElementById("ic_ticketContainer"));
-        ic_printFunBar.render(document.getElementById("functionBar"))
+        ic_unBar.render(document.getElementById("functionBar"))
         goToPrintScreen();
     }},
 
@@ -1295,9 +1295,11 @@ let ic_printFunBar={
         this.container.classList.add("hidden")
         ic_printNav.container.classList.add("hidden")
         window.print();
-        ic_printNav.container.classList.remove("hidden")
-        this.container.classList.remove("hidden")
-        this.OnValidClick()
+        window.onafterprint=(event)=>{
+            ic_printNav.container.classList.remove("hidden")
+            this.container.classList.remove("hidden")
+            this.OnValidClick()
+        }
     },
 
     ic_html: function(){
