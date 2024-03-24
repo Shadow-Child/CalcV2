@@ -1014,7 +1014,7 @@ let ic_validate={
     
         ic_printNav.render(document.getElementById("printNav"))
         ic_Print.render(document.getElementById("ic_ticketContainer"));
-        ic_unBar.render(document.getElementById("functionBar"))
+        ic_printFunBar.render(document.getElementById("functionBar"))
         goToPrintScreen();
     }},
 
@@ -1291,15 +1291,16 @@ let ic_printFunBar={
         document.getElementById("popUpContainer").classList.remove("hidden")
     },
 
-    OnPrintClick: function(){
+    OnPrintClick: async function(){
         this.container.classList.add("hidden")
         ic_printNav.container.classList.add("hidden")
-        window.print();
-        window.onafterprint=(event)=>{
-            ic_printNav.container.classList.remove("hidden")
-            this.container.classList.remove("hidden")
-            this.OnValidClick()
-        }
+        let p= await window.print();
+
+        ic_printNav.container.classList.remove("hidden")
+        this.container.classList.remove("hidden")
+        this.OnValidClick()
+        
+
     },
 
     ic_html: function(){
@@ -1326,10 +1327,11 @@ let ic_historyFunBar={
         this.container.innerHTML= this.ic_html();
     },
 
-    OnPrintClick: function(){
+    OnPrintClick: async function(){
         this.container.classList.add("hidden")
         ic_historyNav.container.classList.add("hidden")
-        window.print();
+        let p= await window.print();
+        
         ic_historyNav.container.classList.remove("hidden")
         this.container.classList.remove("hidden")
     },
