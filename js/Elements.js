@@ -1294,11 +1294,14 @@ let ic_printFunBar={
     OnPrintClick: async function(){
         this.container.classList.add("hidden")
         ic_printNav.container.classList.add("hidden")
-        let p= await window.print();
+        
+        window.onafterprint = (event) => {
+            ic_printNav.container.classList.remove("hidden")
+            this.container.classList.remove("hidden")
+            this.OnValidClick()
+        };
 
-        ic_printNav.container.classList.remove("hidden")
-        this.container.classList.remove("hidden")
-        this.OnValidClick()
+          window.print();
         
 
     },
@@ -1330,10 +1333,14 @@ let ic_historyFunBar={
     OnPrintClick: async function(){
         this.container.classList.add("hidden")
         ic_historyNav.container.classList.add("hidden")
-        let p= await window.print();
+
         
-        ic_historyNav.container.classList.remove("hidden")
-        this.container.classList.remove("hidden")
+        window.onafterprint= (event) =>{
+            ic_historyNav.container.classList.remove("hidden")
+            this.container.classList.remove("hidden")
+        }
+
+        window.print();
     },
 
     ic_html: function(){
