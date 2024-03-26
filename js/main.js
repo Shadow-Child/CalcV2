@@ -1,10 +1,11 @@
-window.onload =  (event) => {
+window.onload = async  (event) => {
 
 
     loadData()
 
 
     ic_Display.render(document.getElementById("ic_screenContainer"))
+    
     setScreenHeight();
 
     this.addEventListener("resize", (event)=> {setScreenHeight();});
@@ -16,9 +17,8 @@ window.onload =  (event) => {
     ic_Print.setData();
     ic_historyPrint.setData();
 
-
+    ic_keyboard.render(document.getElementById("keys"))
     ic_CalculatorInfoBar.render(document.getElementById("infoBarContainer"));
-
 
     numbers.renderBtns();
     ic_nextBtn.render(document.getElementById("ic_nextContainer"));
@@ -32,6 +32,8 @@ window.onload =  (event) => {
     ic_validate.render(document.getElementById("ic_validateContainer"));
     ic_total.render(document.getElementById("ic_totalContainer"));
     ic_total.swipeDownDetect()
+    //ic_total.OnclickEvent()
+    //ic_CreditIco.OnclickEvent()
 
 }
 
@@ -171,7 +173,6 @@ let languages={
         language:"Langue",
         arabic:"Arabe",
         french:"Français",
-        paidAmmount:"Total payé",
         curr:"DT",
         selectDate:"choisir date...",
         addToCredit:"Ajouter au carnet de credit",
@@ -187,6 +188,9 @@ let languages={
         done:"Terminer", 
         search:"Chercher",
         addClient: "Ajouter un Client",
+        totCredit: "Credit Total",
+        client:"Client",
+        confirm:"Confirmer"
     },
 
     AR:{
@@ -208,7 +212,6 @@ let languages={
         language:"اللغة",
         arabic:"العربية",
         french:"الفرنسية",
-        paidAmmount:"المبلغ المدفوع",
         curr:"دت",
         selectDate:"...اختر تاريخ",
         addToCredit:"أضف إلى دفتر الكريدي",
@@ -224,6 +227,9 @@ let languages={
         done:"انتهاء",
         search:"بحث",
         addClient: "إضافة حريف",
+        totCredit: "مجموع الدين",
+        client:"الحريف",
+        confirm:"تأكيد"
     }
 }
 

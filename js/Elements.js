@@ -618,6 +618,7 @@ let ic_Display={
         date:       null,
         count:      null,
         ticketId:   null,
+        title:  "ticket",
     },
 
     addArticle: function(){
@@ -1009,7 +1010,8 @@ let ic_validate={
             "totalTicket":      ic_Display.data.total,
             "ticketId":         ic_Display.data.ticketId,
             "count":            ic_Display.data.count,
-            "date":             ic_Display.data.date
+            "date":             ic_Display.data.date,
+            "title":            ic_Display.data.title
     }])
     
         ic_printNav.render(document.getElementById("printNav"))
@@ -1061,11 +1063,16 @@ let ic_Print={
         message: null,
         ticketContent:[],
         total: null,
+        credit: null,
     },
     
     setContent:function(content){   
         this.data.ticketContent= content;
         this.setTotal();
+    },
+
+    setCredit: function(newVal){
+        this.data.credit= newVal
     },
 
     setData: function(){
@@ -1094,12 +1101,17 @@ let ic_Print={
     },
 
 
-    description: function(name){
+    description: function(){
+        let oldCredit= this.data.credit.tickets.reduce((sum, currentVal)=> sum + currentVal.totalTicket, 0)
+
         this.container.querySelector("#TDescription").innerHTML=`
-            <div>${t("clientName")}: </div>  <div>${name}</div>
+        <div class="border-t-2 border-b-2  border-gray-400 border-dashed p-[10%] pt-[5%] pb-[5%]">
+            <div class="flex font-extrabold">${t("client")}: <div> ${this.data.credit.name}</div></div>  
+            <div class="font-extrabold">${t("totCredit")} au ${this.data.ticketContent[0].date} <div>${(oldCredit+this.data.total).toFixed(3)} ${t("curr")}</div></div> 
+        </div>
         `
     },
-    
+
 
     renderContent:function(){
         let list= document.createElement("div");
@@ -1196,14 +1208,13 @@ let ic_Print={
         
             <div id="ic_contentContainer" dir="${dir()}"></div>
             <div id="ticketFoot" class="text1" dir="${dir()}">
-                <div id="allTotal" class="w-[80%] font-extrabold p-4 m-auto border border-black h-fit leading-[2rem] text4">
+                <div id="allTotal" class="w-[80%] font-extrabold p-4 m-auto mt-[5%] mb-[5%] border border-black h-fit leading-[2rem] text4">
                     <div class="flex justify-between">
-                        <div>${t("paidAmmount")}: </div>
+                        <div>${t("total")}: </div>
                         <div>${this.data.total.toFixed(3)} ${t("curr")}</div>
                     </div>
-
-                    <div id="TDescription" class="flex justify-between"></div>
                 </div>
+                <div id="TDescription" class="m-auto text1"></div>
 
                 <div class="flex w-[85%] justify-between m-auto mt-4 mb-4">
                     <div id="qrCode" class="m-auto w-[20%]">
@@ -1278,6 +1289,10 @@ let ic_printFunBar={
         AppData.tickets[`${ic_Display.data.date}`]= dailyTickets;
         AppConfig.Ticket.ticketId+=1;
         ic_Display.setTicketId();
+
+        ic_Print.data.credit != null?AppData.credit[ic_Print.data.credit.name].tickets.push(ic_Print.data.ticketContent[0]):"";
+        ic_Print.data.credit= null;
+
         updateData();
         updateConfig();
         ic_Display.data.closeTime= null;
@@ -1291,10 +1306,10 @@ let ic_printFunBar={
         document.getElementById("popUpContainer").classList.remove("hidden")
     },
 
-    OnPrintClick: async function(){
+    OnPrintClick: function(){
         this.container.classList.add("hidden")
         ic_printNav.container.classList.add("hidden")
-        
+
         window.onafterprint = (event) => {
             ic_printNav.container.classList.remove("hidden")
             this.container.classList.remove("hidden")
@@ -1302,6 +1317,7 @@ let ic_printFunBar={
         };
 
           window.print();
+
         
 
     },
@@ -1309,9 +1325,9 @@ let ic_printFunBar={
     ic_html: function(){
         return`
         <div class="bg-sky-50 flex border h-full">
-            <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnValidClick()">${t("done")}</div>
             <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnCreditClick()">${t("credit")}</div>
             <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnPrintClick()">${t("print")}</div>
+            <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnValidClick()">${t("done")}</div>
         </div>
         `
     },
@@ -1330,17 +1346,17 @@ let ic_historyFunBar={
         this.container.innerHTML= this.ic_html();
     },
 
-    OnPrintClick: async function(){
+    OnPrintClick: function(){
         this.container.classList.add("hidden")
         ic_historyNav.container.classList.add("hidden")
 
-        
         window.onafterprint= (event) =>{
             ic_historyNav.container.classList.remove("hidden")
             this.container.classList.remove("hidden")
         }
 
         window.print();
+        
     },
 
     ic_html: function(){
@@ -1955,6 +1971,11 @@ ic_languageSett={
                 updateConfig();
             }
         }
+        ic_keyboard.render(document.getElementById("keys")) 
+        numbers.renderBtns();
+        ic_nextBtn.render(document.getElementById("ic_nextContainer"));
+        ic_backspace.render(document.getElementById("ic_backspaceContainer"))
+        
         ic_settingsIco.OnclickEvent()
     },
 
@@ -2087,7 +2108,11 @@ class CreditElements{
 
 
     OnCloseClick= function(){
-        Credit.refreshElements(this.data.name)
+        //Credit.refreshElements(this.data.name)
+        let popUp= document.getElementById("popUpContainer");
+        deleteCredit.setData(this.data.name)
+        deleteCredit.render(popUp)
+        popUp.classList.remove("hidden")
     };
 
 
@@ -2124,6 +2149,88 @@ class CreditElements{
 
                 <div class="border w-[50%] flex justify-center items-center">
                     <a href="sms:${this.data.tel}?&body=Mr ${this.data.name}, votre credit crée le ${this.data.date} est maintenant de ${this.data.total.toFixed(3)} Dt,Avec un total de (${ticket.length}) Ticket(s), ${AppConfig.Ticket.storeName}: ${AppConfig.user.userName},">${t("sendSMS")}</a>
+                </div>
+            </div>
+        </div>
+        `
+    }
+}
+
+
+
+
+let deleteCredit={
+    container: null,
+    data:{
+        name: null,
+    },
+    state:{},
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html();
+    },
+
+    setData: function(name){
+        this.data.name= name;
+    },
+
+    OnCloseClick: function(){
+        this.container.classList.add("hidden");
+        this.container.innerHTML=``
+    },
+
+    OnConfirmClick: function(){
+        let checked= document.querySelectorAll(".deleteDecision:checked")
+        if(checked[0].value == "reset" && checked.length == 1){
+
+            if(this.data.name in AppData.credit){
+                AppData.credit[this.data.name].tickets=[]
+            }
+
+        } 
+        else if(checked[0].value == "delete" || checked.length == 2){
+            
+            if (this.data.name in AppData.credit){
+               delete AppData.credit[this.data.name]
+
+            }
+
+        }
+
+        Credit.getElements()
+        Credit.renderFilter()
+        updateData()
+        this.OnCloseClick()
+    },
+
+    ic_html: function(){
+        return`
+        <div id="addCarnetPopup" class="border border-black flex justify-center h-full items-center bg-gray-700/80" dir="${dir()}">
+            <div class="w-[80%] max-w-[400px] p-4 border h-fit flex flex-col gap-[15px] bg-gray-200 ">
+
+                <div dir="${dir()}" class="flex flex-row-reverse justify-between">
+                    <div class="w-fit" onclick="deleteCredit.OnCloseClick()">╳</div>
+                    <div class="font-bold">Supprimer "${this.data.name}" ?</div>
+                </div>
+
+
+                <div class="flex gap-[10%] leading-none justify-between">
+
+                    <div>
+                        <input type="radio" name="deleteType" value="reset" class="deleteDecision" id="reset" checked/>
+                        <label for="reset">Remise A Zero</label>
+                    </div>
+
+                    <div>
+                        <input type="radio" name="deleteType" value="delete" class="deleteDecision" id="deleteCredit"/>
+                        <label for="deleteCredit">Supprimer</label>
+                    </div>
+
+                </div>
+
+                <div class=" flex justify-center">
+                    <div class="pointer-events-auto bg-sky-500 px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white hover:bg-indigo-500" onclick="deleteCredit.OnConfirmClick()">${t("confirm")}</div>
                 </div>
             </div>
         </div>
@@ -2204,18 +2311,22 @@ let ic_addCarnetPopup={
     OnAddClickEvent:function(){
 
         let name= this.container.querySelector("#creditOptions").value
-        AppData.credit[name].tickets.push(ic_Print.data.ticketContent[0])
-  
+        let dist= this.container.querySelector(".creditDist:checked")
+        if(name.length!=0){
 
-        updateData();
-        this.container.innerHTML= ``
-        this.container.classList.add("hidden")
-        ic_Print.description(name)
+            ic_Print.setCredit(AppData.credit[name])
+            this.container.innerHTML= ``
+            this.container.classList.add("hidden")
+            ic_Print.description(name)
+            ic_Print.data.ticketContent[0].title= "credit"
+        }
+    
     },
 
     OnChangeEvent: function(){
         let Name= this.container.querySelector("#creditOptions").value
         this.container.querySelector("#currNum").value= AppData.credit[Name].Tel
+        //this.container.querySelector("#CreditType").classList.remove("hidden")
     },
 
 
@@ -2226,19 +2337,32 @@ let ic_addCarnetPopup={
                 <div dir="${dir()}" class="flex flex-row-reverse"><div class="w-fit" onclick="ic_addCarnetPopup.OnCloseClickEvent()">╳</div></div>
                 <div class="text4">${t("addToCredit")}</div>
 
-                <div class="flex gap-[10%] justify-between">
-                    <label for="creditOptions" class="text1 flex items-center">${t("clientName")}:</label>
+                <div class="flex gap-[5%] justify-between">
+                    <div class="text1 flex items-center">${t("clientName")}:</div>
                     <select dir="${dir()}" id="creditOptions" onchange="ic_addCarnetPopup.OnChangeEvent()" class="w-[60%]">
                         <option value="" disabled selected>${t("selectClient")}...</option>
                     </select>
                     
-                </select>
                 </div>
 
-                <div class="flex gap-[10%] justify-between">
-                    <label class="text1 flex items-center">${t("telNum")}:</label>
+                <div class="flex gap-[5%] justify-between">
+                    <div class="text1 flex items-center">${t("telNum")}:</div>
                 <input type="number" id="currNum" class="flex-1 max-w-[60%]  text1" readonly/>                
             </div>
+
+            <div id="CreditType" class="flex flex-col gap-[10%] h-[20%] justify-between text1 hidden">
+
+            <div>
+                <input type="radio" class="creditDist" name="creditDist" value="add" id="add" checked/>
+                <label for="add">Accumulation</label>
+            </div>
+
+            <div>
+                <input type="radio" class="creditDist" name="creditDist" value="pay" id="pay"/>
+                <label for="pay">Remboursement </label>
+            </div>
+
+        </div>
 
             <div class=" flex justify-center">
                 <div class="pointer-events-auto bg-sky-500 px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white hover:bg-indigo-500" onclick="ic_addCarnetPopup.OnAddClickEvent()">${t("add")}</div>
@@ -2316,7 +2440,6 @@ let ic_addClientPopup={
         let number= this.container.querySelector("#TelNum").value
         let date= new Date()
         let d= date.getDate() + "/" + (date.getMonth()+1) + "/" + date.getFullYear()
-        console.log(d)
         AppData.credit[name]={
             "name": name,
             "Tel": number,
@@ -2325,7 +2448,6 @@ let ic_addClientPopup={
 
         }
 
-        console.log(d)
   
 
         updateData();
@@ -2363,4 +2485,29 @@ let ic_addClientPopup={
         </div>
         `
     }
+}
+
+
+let ic_keyboard={
+    container: null,
+    data:{},
+    state:{},
+
+    render: function(target){
+        this.container= target;
+        this.container.innerHTML= this.ic_html()
+    },
+
+    ic_html: function(){
+        let s= dir()=="ltr"?1:2
+        return`
+        <div id="numbers" class="row-start-1 row-span-4 col-start-${s} col-span-3 h-full w-full grid grid-rows-subgrid grid-cols-subgrid "></div>
+        <div id="operators" class="row-start-1 row-span-4 grid grid-rows-subgrid">
+            <div id="ic_remiseContainer" class="row-span-1 m-auto w-[95%]"></div>
+            <div id="ic_nextContainer" class="row-span-2 m-auto w-[95%]"></div>
+            <div id="ic_backspaceContainer" class="row-span-1 m-auto w-[95%]"></div>
+        </div>
+        `
+    },
+
 }
