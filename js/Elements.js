@@ -1307,18 +1307,21 @@ let ic_printFunBar={
     },
 
     OnPrintClick: function(){
-        this.container.classList.add("hidden")
+        /*this.container.classList.add("hidden")
         ic_printNav.container.classList.add("hidden")
 
-        window.onafterprint = (event) => {
-            ic_printNav.container.classList.remove("hidden")
-            this.container.classList.remove("hidden")
-            this.OnValidClick()
-        };
+        let p= await window.print();
 
-          window.print();
+        ic_printNav.container.classList.remove("hidden")
+        this.container.classList.remove("hidden")
+        this.OnValidClick()*/
 
-        
+        window.onafterprint=(event)=>{
+            ic_printNav.container.classList.add("hidden")
+        }
+
+        window.print();
+
 
     },
 
@@ -1328,6 +1331,14 @@ let ic_printFunBar={
             <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnCreditClick()">${t("credit")}</div>
             <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnPrintClick()">${t("print")}</div>
             <div class="border flex-1 flex justify-center items-center" onclick="ic_printFunBar.OnValidClick()">${t("done")}</div>
+            <style>
+            @media Print{
+                #functionBar,
+                #printNav{
+                    display: none !important
+                }
+            }
+            </style>
         </div>
         `
     },
@@ -1346,16 +1357,16 @@ let ic_historyFunBar={
         this.container.innerHTML= this.ic_html();
     },
 
-    OnPrintClick: function(){
+    OnPrintClick: async function(){
         this.container.classList.add("hidden")
         ic_historyNav.container.classList.add("hidden")
 
-        window.onafterprint= (event) =>{
+        window.print();
+
+        setTimeout(()=>{
             ic_historyNav.container.classList.remove("hidden")
             this.container.classList.remove("hidden")
-        }
-
-        window.print();
+        },250)
         
     },
 
